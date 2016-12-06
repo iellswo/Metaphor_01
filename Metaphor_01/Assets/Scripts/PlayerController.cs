@@ -8,10 +8,13 @@ public class PlayerController : MonoBehaviour
     public Vector2 characterHalfSize = new Vector2(0.25f, .5f);
     [Tooltip("How quickly the player accelerates from standing to running on the ground (m/s/s).")]
     public float groundForwardAcceleration = 1.0f;
+    public float airForwardAcceleration = 0.0f;
     [Tooltip("How quickly the player skids to a stop when they press in the opposite direction (m/s/s)")]
     public float groundReverseAcceleration = 2.0f;
+    public float airReverseAcceleration = 1.0f;
     [Tooltip("How quickly the player slows to a stop when they let go of the input (m/s/s)")]
     public float groundRunningFriction = 0.2f;
+    public float airRunningFriction = 0.0f;
     [Tooltip("The player's max speed while running on the ground (m/s)")]
     public float groundMaxSpeed = 5.0f;
     public float maxSeekToGroundDistance = 0.33333f;
@@ -30,7 +33,7 @@ public class PlayerController : MonoBehaviour
             SInput ret = new SInput();
             ret.left = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
             ret.right = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
-            ret.jumpDown = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W);
+            ret.jumpDown = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space);
             ret.jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
             return ret;
         }
@@ -49,6 +52,11 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKey(KeyCode.F1))
+        {
+            Debug.Log(currentMovementState);
+        }
+
         Camera.main.transform.position = transform.position + Vector3.back * 10.0f;
 
         timeInCurrentState += Time.deltaTime;
@@ -65,24 +73,34 @@ public class PlayerController : MonoBehaviour
         }
 
         float sameDirectionCheckValue = currentVelocity.x * horizInput;
-        float acceleration;
+        float forwardAcceleration, skidAcceleration, frictionAcceleration;
+        if (currentMovementState == ECurrentMovementState.Grounded)
+        {
+            forwardAcceleration = groundForwardAcceleration;
+            skidAcceleration = groundReverseAcceleration;
+            frictionAcceleration = groundRunningFriction;
+        }
+        else
+        {
+            forwardAcceleration = airForwardAcceleration;
+            skidAcceleration = airReverseAcceleration;
+            frictionAcceleration = airRunningFriction;
+        }
 
         if (horizInput == 0.0f)
         {
             // Decelerate or just stand still.
-            currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0.0f, groundRunningFriction * Time.deltaTime);
+            currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0.0f, frictionAcceleration * Time.deltaTime);
         }
         else if (sameDirectionCheckValue >= 0)
         {
             // Accelerate in the direction you're currently moving.
-            acceleration = horizInput * groundForwardAcceleration * Time.deltaTime;
-            currentVelocity.x += acceleration;
+            currentVelocity.x += horizInput * forwardAcceleration * Time.deltaTime;
         }
         else if (sameDirectionCheckValue < 0)
         {
             // Skid quickly to a stop if you press in the opposite direction.
-            acceleration = horizInput * groundReverseAcceleration * Time.deltaTime;
-            currentVelocity.x += acceleration;
+            currentVelocity.x += horizInput * skidAcceleration * Time.deltaTime;
         }
 
         float maxSpeed = groundMaxSpeed;
