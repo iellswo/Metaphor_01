@@ -49,6 +49,8 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Camera.main.transform.position = transform.position + Vector3.back * 10.0f;
+
         timeInCurrentState += Time.deltaTime;
 
         SInput currentInput = SInput.GetCurrentInput();
