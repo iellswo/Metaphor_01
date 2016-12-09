@@ -43,11 +43,19 @@ public class PlayerController : MonoBehaviour
     {
         Grounded,
         Airborne,
+        Dead,
     }
     private ECurrentMovementState currentMovementState = ECurrentMovementState.Grounded;
     private float timeInCurrentState = 0.0f;
 
     private Vector2 currentVelocity = Vector2.zero;
+
+    private Vector2 lastRespawnPoint = Vector2.zero;
+
+    void Awake()
+    {
+        lastRespawnPoint = transform.position;
+    }
 
     // Update is called once per frame
     void Update()
@@ -114,7 +122,7 @@ public class PlayerController : MonoBehaviour
         Vector3 currentOffset = currentVelocity * Time.deltaTime;
 
         RaycastHit2D hit;
-        int playerWorldCollisionMask = -1;
+        int playerWorldCollisionMask = -1 + 4; // include All, exclude IgnoreRaycast
         Vector3 currentPosition = transform.position;
         bool canJump = false;
         bool isOnGround = true;
@@ -198,6 +206,33 @@ public class PlayerController : MonoBehaviour
         }
 
         // State changes.
+        if (currentMovementState != ECurrentMovementState.Dead)
+        {
+            // TODO Use nonalloc
+            Collider2D[] colliders = Physics2D.OverlapBoxAll(transform.position, characterHalfSize, 0.0f, 4); // 4 is IgnoreRaycast for triggers.
+            foreach (Collider2D col in colliders)
+            {
+                if (col.GetComponent<KillPlayerZone>())
+                {
+                    // Check if we've died.
+                    currentMovementState = ECurrentMovementState.Dead;
+                    canJump = false;
+                    break;
+                }
+                else if (col.GetComponent<PlayerCheckpoint>() && lastRespawnPoint != (Vector2)col.transform.position)
+                {
+                    // Check if we're resetting the respawn point.
+                    lastRespawnPoint = col.transform.position;
+                    Debug.Log("Set respawn point to " + lastRespawnPoint + ". TODO: Particle effect for checkpoints?");
+                }
+            }
+        }
+        else
+        {
+            transform.position = lastRespawnPoint;
+            currentVelocity = Vector2.zero;
+            currentMovementState = ECurrentMovementState.Airborne;
+        }
         if (canJump && currentInput.jumpDown)
         {
             // Jump action.
@@ -214,6 +249,8 @@ public class PlayerController : MonoBehaviour
             // Fall off cliffs.
             SetCurrentState(ECurrentMovementState.Airborne);
         }
+
+        transform.position = new Vector3(transform.position.x, transform.position.y, -1);
     }
 
     private void SetCurrentState(ECurrentMovementState state)
