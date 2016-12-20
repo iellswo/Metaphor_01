@@ -24,6 +24,10 @@ public class PlayerController : MonoBehaviour
     public float gravity = 10.0f;
     [Tooltip("Player's max speed when falling (m/s)")]
     public float maxFallSpeed = 10.0f;
+    [Tooltip("The power-up bar that appears when the player has a powerup.")]
+    public Transform powerUpBar;
+    [Tooltip("The particle system on the player that makes SFX for air walking.")]
+    public ParticleSystem airWalkEmitter;
 
     private struct SInput
     {
@@ -47,6 +51,9 @@ public class PlayerController : MonoBehaviour
     }
     private ECurrentMovementState currentMovementState = ECurrentMovementState.Grounded;
     private float timeInCurrentState = 0.0f;
+
+    private float currentAirWalkPowerUpMeter = 0.0f;
+    private float maxPowerMeter = 0.0f;
 
     private Vector2 currentVelocity = Vector2.zero;
 
@@ -205,6 +212,7 @@ public class PlayerController : MonoBehaviour
                 break;
         }
 
+        bool isUsingAirWalk = false;
         // State changes.
         if (currentMovementState != ECurrentMovementState.Dead)
         {
@@ -225,6 +233,10 @@ public class PlayerController : MonoBehaviour
                     lastRespawnPoint = col.transform.position;
                     Debug.Log("Set respawn point to " + lastRespawnPoint + ". TODO: Particle effect for checkpoints?");
                 }
+                else if (col.GetComponent<PowerUp>())
+                {
+                    GetPowerUp(col.GetComponent<PowerUp>());
+                }
             }
         }
         else
@@ -244,13 +256,60 @@ public class PlayerController : MonoBehaviour
             // Land on ground.
             SetCurrentState(ECurrentMovementState.Grounded);
         }
+        else if (currentMovementState == ECurrentMovementState.Airborne && currentVelocity.y <= 0.0f && currentAirWalkPowerUpMeter > 0.0f)
+        {
+            // Air walk after jump.
+            SetCurrentState(ECurrentMovementState.Grounded);
+            isUsingAirWalk = true;
+        }
         else if (!isOnGround && currentMovementState == ECurrentMovementState.Grounded)
         {
             // Fall off cliffs.
-            SetCurrentState(ECurrentMovementState.Airborne);
+            if (currentAirWalkPowerUpMeter <= 0.0f)
+            {
+                SetCurrentState(ECurrentMovementState.Airborne);
+            }
+            else
+            {
+                isUsingAirWalk = true;
+            }
+        }
+
+        if (isUsingAirWalk)
+        {
+            currentAirWalkPowerUpMeter -= Time.deltaTime * Mathf.Abs(currentVelocity.x / groundMaxSpeed);
+            airWalkEmitter.Emit(1);
+        }
+
+        // Powerup bar
+        if (currentAirWalkPowerUpMeter > 0.0f)
+        {
+            powerUpBar.gameObject.SetActive(true);
+            Vector3 scale = powerUpBar.transform.localScale;
+            scale.x = currentAirWalkPowerUpMeter / maxPowerMeter;
+            powerUpBar.transform.localScale = scale;
+        }
+        else
+        {
+            powerUpBar.gameObject.SetActive(false);
         }
 
         transform.position = new Vector3(transform.position.x, transform.position.y, -1);
+    }
+
+    public void GetPowerUp(PowerUp powerUp)
+    {
+        switch (powerUp.powerUpType)
+        {
+            case PowerUp.EPowerUpType.AirWalk:
+                currentAirWalkPowerUpMeter = powerUp.strength;
+                maxPowerMeter = powerUp.strength;
+                break;
+            default:
+                Debug.Log("Powerup type not implemented.");
+                break;
+        }
+        powerUp.DeSpawn();
     }
 
     private void SetCurrentState(ECurrentMovementState state)
