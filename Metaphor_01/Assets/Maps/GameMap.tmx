@@ -25,15 +25,15 @@
   </tile>
   <tile id="8">
    <objectgroup draworder="index">
-    <object id="2" x="16" y="0">
-     <polyline points="0,0 -11.875,0 -16,4.3125 -15.9375,8.9375 -9.9375,14 -9.9375,16 0,16 0,0"/>
+    <object id="3" x="16" y="0">
+     <polyline points="0,0 -16,0 -16,16 0,16 0,0"/>
     </object>
    </objectgroup>
   </tile>
   <tile id="9">
    <objectgroup draworder="index">
-    <object id="1" x="0" y="0">
-     <polyline points="0,0 11.875,0.0625 15.9375,4.1875 15.875,8.8125 9.8125,14.0625 9.8125,16 0,16 0,0"/>
+    <object id="4" x="0" y="0">
+     <polyline points="0,0 16,0 16,16 0,16 0,0"/>
     </object>
    </objectgroup>
   </tile>
@@ -53,15 +53,15 @@
   </tile>
   <tile id="16">
    <objectgroup draworder="index">
-    <object id="1" x="6.125" y="0">
-     <polyline points="0,0 -6.125,8.25 -6.125,16 9.875,16 9.875,0 -0.125,-0.0625"/>
+    <object id="2" x="0" y="0">
+     <polyline points="0,0 16,0 16,16 0,16 0,0"/>
     </object>
    </objectgroup>
   </tile>
   <tile id="17">
    <objectgroup draworder="index">
-    <object id="1" x="0" y="0">
-     <polyline points="0,0 9.875,0 16,8.25 16,16 0,16 0,0"/>
+    <object id="2" x="0" y="0">
+     <polyline points="0,0 16,0 16,16 0,16 0,0"/>
     </object>
    </objectgroup>
   </tile>
@@ -93,7 +93,21 @@
     </object>
    </objectgroup>
   </tile>
+  <tile id="32">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0">
+     <polyline points="0,0 16,0 16,16 0,16 0,0"/>
+    </object>
+   </objectgroup>
+  </tile>
   <tile id="33">
+   <objectgroup draworder="index">
+    <object id="1" x="0" y="0">
+     <polyline points="0,0 16,0 16,16 0,16 0,0"/>
+    </object>
+   </objectgroup>
+  </tile>
+  <tile id="40">
    <objectgroup draworder="index">
     <object id="1" x="0" y="0">
      <polyline points="0,0 16,0 16,16 0,16 0,0"/>
