@@ -8,6 +8,4 @@ public class PowerUp : ISpawnableObject
         AirWalk = 0,
     }
     public EPowerUpType powerUpType;
-
-    public float strength = 5.0f;
 }
