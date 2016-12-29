@@ -8,10 +8,13 @@ public class PlayerController : MonoBehaviour
     public Vector2 characterHalfSize = new Vector2(0.25f, .5f);
     [Tooltip("How quickly the player accelerates from standing to running on the ground (m/s/s).")]
     public float groundForwardAcceleration = 1.0f;
+    public float airForwardAcceleration = 0.0f;
     [Tooltip("How quickly the player skids to a stop when they press in the opposite direction (m/s/s)")]
     public float groundReverseAcceleration = 2.0f;
+    public float airReverseAcceleration = 1.0f;
     [Tooltip("How quickly the player slows to a stop when they let go of the input (m/s/s)")]
     public float groundRunningFriction = 0.2f;
+    public float airRunningFriction = 0.0f;
     [Tooltip("The player's max speed while running on the ground (m/s)")]
     public float groundMaxSpeed = 5.0f;
     public float maxSeekToGroundDistance = 0.33333f;
@@ -21,6 +24,10 @@ public class PlayerController : MonoBehaviour
     public float gravity = 10.0f;
     [Tooltip("Player's max speed when falling (m/s)")]
     public float maxFallSpeed = 10.0f;
+    [Tooltip("The power-up bar that appears when the player has a powerup.")]
+    public Transform powerUpBar;
+    [Tooltip("The particle system on the player that makes SFX for air walking.")]
+    public ParticleSystem airWalkEmitter;
 
     private struct SInput
     {
@@ -30,7 +37,7 @@ public class PlayerController : MonoBehaviour
             SInput ret = new SInput();
             ret.left = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
             ret.right = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
-            ret.jumpDown = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W);
+            ret.jumpDown = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space);
             ret.jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
             return ret;
         }
@@ -40,15 +47,33 @@ public class PlayerController : MonoBehaviour
     {
         Grounded,
         Airborne,
+        Dead,
     }
     private ECurrentMovementState currentMovementState = ECurrentMovementState.Grounded;
     private float timeInCurrentState = 0.0f;
 
+    private float currentAirWalkPowerUpMeter = 0.0f;
+    private float maxPowerMeter = 0.0f;
+
     private Vector2 currentVelocity = Vector2.zero;
+
+    private Vector2 lastRespawnPoint = Vector2.zero;
+
+    void Awake()
+    {
+        lastRespawnPoint = transform.position;
+    }
 
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKey(KeyCode.F1))
+        {
+            Debug.Log(currentMovementState);
+        }
+
+        Camera.main.transform.position = transform.position + Vector3.back * 10.0f;
+
         timeInCurrentState += Time.deltaTime;
 
         SInput currentInput = SInput.GetCurrentInput();
@@ -63,24 +88,34 @@ public class PlayerController : MonoBehaviour
         }
 
         float sameDirectionCheckValue = currentVelocity.x * horizInput;
-        float acceleration;
+        float forwardAcceleration, skidAcceleration, frictionAcceleration;
+        if (currentMovementState == ECurrentMovementState.Grounded)
+        {
+            forwardAcceleration = groundForwardAcceleration;
+            skidAcceleration = groundReverseAcceleration;
+            frictionAcceleration = groundRunningFriction;
+        }
+        else
+        {
+            forwardAcceleration = airForwardAcceleration;
+            skidAcceleration = airReverseAcceleration;
+            frictionAcceleration = airRunningFriction;
+        }
 
         if (horizInput == 0.0f)
         {
             // Decelerate or just stand still.
-            currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0.0f, groundRunningFriction * Time.deltaTime);
+            currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0.0f, frictionAcceleration * Time.deltaTime);
         }
         else if (sameDirectionCheckValue >= 0)
         {
             // Accelerate in the direction you're currently moving.
-            acceleration = horizInput * groundForwardAcceleration * Time.deltaTime;
-            currentVelocity.x += acceleration;
+            currentVelocity.x += horizInput * forwardAcceleration * Time.deltaTime;
         }
         else if (sameDirectionCheckValue < 0)
         {
             // Skid quickly to a stop if you press in the opposite direction.
-            acceleration = horizInput * groundReverseAcceleration * Time.deltaTime;
-            currentVelocity.x += acceleration;
+            currentVelocity.x += horizInput * skidAcceleration * Time.deltaTime;
         }
 
         float maxSpeed = groundMaxSpeed;
@@ -94,7 +129,7 @@ public class PlayerController : MonoBehaviour
         Vector3 currentOffset = currentVelocity * Time.deltaTime;
 
         RaycastHit2D hit;
-        int playerWorldCollisionMask = -1;
+        int playerWorldCollisionMask = -1 + 4; // include All, exclude IgnoreRaycast
         Vector3 currentPosition = transform.position;
         bool canJump = false;
         bool isOnGround = true;
@@ -177,7 +212,39 @@ public class PlayerController : MonoBehaviour
                 break;
         }
 
+        bool isUsingAirWalk = false;
         // State changes.
+        if (currentMovementState != ECurrentMovementState.Dead)
+        {
+            // TODO Use nonalloc
+            Collider2D[] colliders = Physics2D.OverlapBoxAll(transform.position, characterHalfSize, 0.0f, 4); // 4 is IgnoreRaycast for triggers.
+            foreach (Collider2D col in colliders)
+            {
+                if (col.GetComponent<KillPlayerZone>())
+                {
+                    // Check if we've died.
+                    currentMovementState = ECurrentMovementState.Dead;
+                    canJump = false;
+                    break;
+                }
+                else if (col.GetComponent<PlayerCheckpoint>() && lastRespawnPoint != (Vector2)col.transform.position)
+                {
+                    // Check if we're resetting the respawn point.
+                    lastRespawnPoint = col.transform.position;
+                    Debug.Log("Set respawn point to " + lastRespawnPoint + ". TODO: Particle effect for checkpoints?");
+                }
+                else if (col.GetComponent<PowerUp>())
+                {
+                    GetPowerUp(col.GetComponent<PowerUp>());
+                }
+            }
+        }
+        else
+        {
+            transform.position = lastRespawnPoint;
+            currentVelocity = Vector2.zero;
+            currentMovementState = ECurrentMovementState.Airborne;
+        }
         if (canJump && currentInput.jumpDown)
         {
             // Jump action.
@@ -189,11 +256,60 @@ public class PlayerController : MonoBehaviour
             // Land on ground.
             SetCurrentState(ECurrentMovementState.Grounded);
         }
+        else if (currentMovementState == ECurrentMovementState.Airborne && currentVelocity.y <= 0.0f && currentAirWalkPowerUpMeter > 0.0f)
+        {
+            // Air walk after jump.
+            SetCurrentState(ECurrentMovementState.Grounded);
+            isUsingAirWalk = true;
+        }
         else if (!isOnGround && currentMovementState == ECurrentMovementState.Grounded)
         {
             // Fall off cliffs.
-            SetCurrentState(ECurrentMovementState.Airborne);
+            if (currentAirWalkPowerUpMeter <= 0.0f)
+            {
+                SetCurrentState(ECurrentMovementState.Airborne);
+            }
+            else
+            {
+                isUsingAirWalk = true;
+            }
         }
+
+        if (isUsingAirWalk)
+        {
+            currentAirWalkPowerUpMeter -= Time.deltaTime * Mathf.Abs(currentVelocity.x / groundMaxSpeed);
+            airWalkEmitter.Emit(1);
+        }
+
+        // Powerup bar
+        if (currentAirWalkPowerUpMeter > 0.0f)
+        {
+            powerUpBar.gameObject.SetActive(true);
+            Vector3 scale = powerUpBar.transform.localScale;
+            scale.x = currentAirWalkPowerUpMeter / maxPowerMeter;
+            powerUpBar.transform.localScale = scale;
+        }
+        else
+        {
+            powerUpBar.gameObject.SetActive(false);
+        }
+
+        transform.position = new Vector3(transform.position.x, transform.position.y, -1);
+    }
+
+    public void GetPowerUp(PowerUp powerUp)
+    {
+        switch (powerUp.powerUpType)
+        {
+            case PowerUp.EPowerUpType.AirWalk:
+                currentAirWalkPowerUpMeter = powerUp.strength;
+                maxPowerMeter = powerUp.strength;
+                break;
+            default:
+                Debug.Log("Powerup type not implemented.");
+                break;
+        }
+        powerUp.DeSpawn();
     }
 
     private void SetCurrentState(ECurrentMovementState state)
