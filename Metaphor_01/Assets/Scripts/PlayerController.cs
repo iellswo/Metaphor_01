@@ -4,26 +4,45 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("General")]
     [Tooltip("Half of the player's hitbox size.")]
     public Vector2 characterHalfSize = new Vector2(0.25f, .5f);
+    public float maxSeekToGroundDistance = 0.33333f;
+    public Animator spriteAnimator;
+    public string animationStateStanding = "Standing";
+    public string animationStateWalking = "Walking";
+    public string animationStateJumping = "Jumping";
+
+    [Header("Ground Movement Data")]
     [Tooltip("How quickly the player accelerates from standing to running on the ground (m/s/s).")]
     public float groundForwardAcceleration = 1.0f;
-    public float airForwardAcceleration = 0.0f;
     [Tooltip("How quickly the player skids to a stop when they press in the opposite direction (m/s/s)")]
     public float groundReverseAcceleration = 2.0f;
-    public float airReverseAcceleration = 1.0f;
     [Tooltip("How quickly the player slows to a stop when they let go of the input (m/s/s)")]
     public float groundRunningFriction = 0.2f;
-    public float airRunningFriction = 0.0f;
     [Tooltip("The player's max speed while running on the ground (m/s)")]
     public float groundMaxSpeed = 5.0f;
-    public float maxSeekToGroundDistance = 0.33333f;
+    [Tooltip("How fast the player animates walking.")]
+    public float walkingAnimationVelocity = 2.0f;
+
+    [Header("Jumping Movement Data")]
+    public float airForwardAcceleration = 0.0f;
+    public float airReverseAcceleration = 1.0f;
+    public float airRunningFriction = 0.0f;
     [Tooltip("How quickly the player rises when they begin to jump (m/s)")]
     public float jumpRisingVelocity = 10.0f;
     [Tooltip("How quickly the player gains downwards velocity whilte airborne (m/s/s)")]
     public float gravity = 10.0f;
     [Tooltip("Player's max speed when falling (m/s)")]
     public float maxFallSpeed = 10.0f;
+
+    [Header("Air Walk Powerup")]
+    [Tooltip("How far the player can move horizontally with the air walk powerup.")]
+    public float maxAirWalkDistance = 2.0f;
+    [Tooltip("How much air walk power the player loses when they jump while air walking.")]
+    public float airWalkJumpLoss = 2.0f;
+
+    [Header("GameObject Connections")]
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
     public Transform powerUpBar;
     [Tooltip("The particle system on the player that makes SFX for air walking.")]
@@ -53,7 +72,6 @@ public class PlayerController : MonoBehaviour
     private float timeInCurrentState = 0.0f;
 
     private float currentAirWalkPowerUpMeter = 0.0f;
-    private float maxPowerMeter = 0.0f;
 
     private Vector2 currentVelocity = Vector2.zero;
 
@@ -223,7 +241,7 @@ public class PlayerController : MonoBehaviour
                 if (col.GetComponent<KillPlayerZone>())
                 {
                     // Check if we've died.
-                    currentMovementState = ECurrentMovementState.Dead;
+                    SetCurrentState(ECurrentMovementState.Dead);
                     canJump = false;
                     break;
                 }
@@ -243,7 +261,8 @@ public class PlayerController : MonoBehaviour
         {
             transform.position = lastRespawnPoint;
             currentVelocity = Vector2.zero;
-            currentMovementState = ECurrentMovementState.Airborne;
+            SetCurrentState(ECurrentMovementState.Airborne);
+            spriteAnimator.CrossFade(animationStateJumping, 0.0f);
         }
         if (canJump && currentInput.jumpDown)
         {
@@ -261,6 +280,7 @@ public class PlayerController : MonoBehaviour
             // Air walk after jump.
             SetCurrentState(ECurrentMovementState.Grounded);
             isUsingAirWalk = true;
+            currentAirWalkPowerUpMeter -= airWalkJumpLoss;
         }
         else if (!isOnGround && currentMovementState == ECurrentMovementState.Grounded)
         {
@@ -286,12 +306,47 @@ public class PlayerController : MonoBehaviour
         {
             powerUpBar.gameObject.SetActive(true);
             Vector3 scale = powerUpBar.transform.localScale;
-            scale.x = currentAirWalkPowerUpMeter / maxPowerMeter;
+            scale.x = currentAirWalkPowerUpMeter / maxAirWalkDistance;
             powerUpBar.transform.localScale = scale;
         }
         else
         {
             powerUpBar.gameObject.SetActive(false);
+        }
+
+        // Animator facing
+        float velocity = currentVelocity.x;
+        if (currentVelocity.x > 0.0f)
+        {
+            spriteAnimator.GetComponent<SpriteRenderer>().flipX = false;
+        }
+        else if (currentVelocity.x < 0.0f)
+        {
+            spriteAnimator.GetComponent<SpriteRenderer>().flipX = true;
+        }
+        velocity = Mathf.Abs(velocity);
+        if (isOnGround || isUsingAirWalk)
+        {
+            if (velocity <= 0.05f)
+            {
+                spriteAnimator.speed = 1.0f;
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateStanding))
+                {
+                    spriteAnimator.CrossFade(animationStateStanding, 0.0f);
+                }
+            }
+            else
+            {
+                spriteAnimator.speed = velocity * walkingAnimationVelocity;
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateWalking))
+                {
+                    spriteAnimator.CrossFade(animationStateWalking, 0.0f);
+                }
+            }
+        }
+        else
+        {
+            spriteAnimator.speed = 1.0f;
         }
 
         transform.position = new Vector3(transform.position.x, transform.position.y, -1);
@@ -302,8 +357,7 @@ public class PlayerController : MonoBehaviour
         switch (powerUp.powerUpType)
         {
             case PowerUp.EPowerUpType.AirWalk:
-                currentAirWalkPowerUpMeter = powerUp.strength;
-                maxPowerMeter = powerUp.strength;
+                currentAirWalkPowerUpMeter = maxAirWalkDistance;
                 break;
             default:
                 Debug.Log("Powerup type not implemented.");
@@ -316,5 +370,18 @@ public class PlayerController : MonoBehaviour
     {
         currentMovementState = state;
         timeInCurrentState = 0.0f;
+        string animatorState = animationStateWalking;
+        switch (state)
+        {
+            case ECurrentMovementState.Grounded:
+                animatorState = animationStateWalking;
+                break;
+            case ECurrentMovementState.Airborne:
+                animatorState = animationStateJumping;
+                break;
+            case ECurrentMovementState.Dead:
+                break;
+        }
+        spriteAnimator.CrossFade(animatorState, 0.0f);
     }
 }
