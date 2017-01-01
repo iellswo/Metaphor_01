@@ -5,6 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+#if !UNITY_WEBPLAYER
+using System.Xml.Linq;
+#endif
+
 using UnityEditor;
 using UnityEngine;
 
@@ -12,12 +16,19 @@ namespace Tiled2Unity
 {
     class Tiled2UnityMenuItems
     {
+#if !UNITY_WEBPLAYER
         // Convenience function for packaging this library
         [MenuItem("Tiled2Unity/Export Tiled2Unity Library ...")]
         static void ExportLibrary()
         {
-            string name = String.Format("Tiled2Unity.{0}.unitypackage", ImportTiled2Unity.ThisVersion);
-            var path = EditorUtility.SaveFilePanel("Save texture as PNG", "", name, "unitypackage");
+            // Get the version from our Tiled2Unity.export.txt library data file
+            TextAsset textAsset = AssetDatabase.LoadAssetAtPath("Assets/Tiled2Unity/Tiled2Unity.export.txt", typeof(TextAsset)) as TextAsset;
+            XDocument xml = XDocument.Parse(textAsset.text);
+            string version = xml.Element("Tiled2UnityImporter").Element("Header").Attribute("version").Value;
+
+            // Export the package
+            string name = String.Format("Tiled2Unity.{0}.unitypackage", version);
+            var path = EditorUtility.SaveFilePanel("Save Tiled2Unity library as unity package.", "", name, "unitypackage");
             if (path.Length != 0)
             {
                 List<string> packageFiles = new List<string>();
@@ -25,6 +36,7 @@ namespace Tiled2Unity
                 AssetDatabase.ExportPackage(packageFiles.ToArray(), path);
             }
         }
+#endif
 
         // Not ready for public consumption yet. (But handy to have for development)
         //[MenuItem("Tiled2Unity/Clean Tiled2Unity Files")]
