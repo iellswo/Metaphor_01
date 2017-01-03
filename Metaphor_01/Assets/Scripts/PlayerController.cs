@@ -36,6 +36,9 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Player's max speed when falling (m/s)")]
     public float maxFallSpeed = 10.0f;
 
+    public float fallingAnimationStartVelocity = -1.0f;
+    public float fallingAnimationEndVelocity = 1.0f;
+
     [Header("Air Walk Powerup")]
     [Tooltip("How far the player can move horizontally with the air walk powerup.")]
     public float maxAirWalkDistance = 2.0f;
@@ -346,7 +349,8 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            spriteAnimator.speed = 1.0f;
+            spriteAnimator.speed = 0.0f;
+            spriteAnimator.ForceStateNormalizedTime(Mathf.InverseLerp(fallingAnimationStartVelocity, fallingAnimationEndVelocity, currentVelocity.y));
         }
 
         transform.position = new Vector3(transform.position.x, transform.position.y, -1);

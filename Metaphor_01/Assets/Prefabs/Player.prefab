@@ -206,6 +206,8 @@ MonoBehaviour:
   jumpRisingVelocity: 14
   gravity: 40
   maxFallSpeed: 10
+  fallingAnimationStartVelocity: 5
+  fallingAnimationEndVelocity: -10
   maxAirWalkDistance: 2
   airWalkJumpLoss: 0.9
   powerUpBar: {fileID: 4000012516916554}
