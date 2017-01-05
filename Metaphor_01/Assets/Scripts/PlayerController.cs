@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 
 public class PlayerController : MonoBehaviour
@@ -80,6 +80,8 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 lastRespawnPoint = Vector2.zero;
 
+    private List<CameraZone> currentCameraZones = new List<CameraZone>();
+
     void Awake()
     {
         lastRespawnPoint = transform.position;
@@ -92,8 +94,6 @@ public class PlayerController : MonoBehaviour
         {
             Debug.Log(currentMovementState);
         }
-
-        Camera.main.transform.position = transform.position + Vector3.back * 10.0f;
 
         timeInCurrentState += Time.deltaTime;
 
@@ -234,10 +234,12 @@ public class PlayerController : MonoBehaviour
         }
 
         bool isUsingAirWalk = false;
+
         // State changes.
         if (currentMovementState != ECurrentMovementState.Dead)
         {
             // TODO Use nonalloc
+            currentCameraZones.Clear();
             Collider2D[] colliders = Physics2D.OverlapBoxAll(transform.position, characterHalfSize, 0.0f, 4); // 4 is IgnoreRaycast for triggers.
             foreach (Collider2D col in colliders)
             {
@@ -247,6 +249,10 @@ public class PlayerController : MonoBehaviour
                     SetCurrentState(ECurrentMovementState.Dead);
                     canJump = false;
                     break;
+                }
+                else if (col.GetComponent<CameraZone>())
+                {
+                    currentCameraZones.Add(col.GetComponent<CameraZone>());
                 }
                 else if (col.GetComponent<PlayerCheckpoint>() && lastRespawnPoint != (Vector2)col.transform.position)
                 {
@@ -315,6 +321,30 @@ public class PlayerController : MonoBehaviour
         else
         {
             powerUpBar.gameObject.SetActive(false);
+        }
+
+        // Cameras
+        CameraZone cameraZone = null;
+        // TODO Camera smoothing.
+        foreach (CameraZone camera in currentCameraZones)
+        {
+            if (cameraZone == null || camera.priority > cameraZone.priority)
+            {
+                cameraZone = camera;
+            }
+        }
+        if (cameraZone != null)
+        {
+            Camera.main.orthographicSize = Mathf.MoveTowards(Camera.main.orthographicSize, cameraZone.screenHeight / 2.0f, Time.deltaTime * cameraZone.screenHeightAdjustSpeed);
+            Vector2 cameraSize = new Vector2(Camera.main.orthographicSize * Camera.main.aspect, Camera.main.orthographicSize);
+            Vector3 cameraPosition = transform.position + Vector3.back * 10.0f;
+            cameraPosition.x = Mathf.Clamp(cameraPosition.x, cameraZone.left + cameraSize.x, cameraZone.right - cameraSize.x);
+            cameraPosition.y = Mathf.Clamp(cameraPosition.y, cameraZone.bottom + cameraSize.y, cameraZone.top - cameraSize.y);
+            Camera.main.transform.position = cameraPosition;
+        }
+        else
+        {
+            Camera.main.transform.position = transform.position + Vector3.back * 10.0f;
         }
 
         // Animator facing
