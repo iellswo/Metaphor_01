@@ -73,13 +73,12 @@ namespace Tiled2Unity
 
                 if (importComponent.ExporterTiled2UnityVersion != importerTiled2UnityVersion)
                 {
-                    Debug.LogWarning(string.Format("Imported Tiled2Unity file '{0}' was exported with version {1}. We are expecting version {2}", importComponent.Tiled2UnityXmlPath, importComponent.ExporterTiled2UnityVersion, importerTiled2UnityVersion));
+                    importComponent.RecordWarning("Imported Tiled2Unity file '{0}' was exported with version {1}. We are expecting version {2}", importComponent.Tiled2UnityXmlPath, importComponent.ExporterTiled2UnityVersion, importerTiled2UnityVersion);
                 }
             }
             catch (Exception e)
             {
-                string warning = String.Format("Failed to read Tiled2Unity import version from '{0}': {1}", importComponent.Tiled2UnityXmlPath, e.Message);
-                Debug.LogWarning(warning);
+                importComponent.RecordError("Failed to read Tiled2Unity import version from '{0}': {1}", importComponent.Tiled2UnityXmlPath, e.Message);
             }
         }
 
