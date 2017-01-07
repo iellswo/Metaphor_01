@@ -81,6 +81,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\CameraZone.cs" />
     <Compile Include="Assets\Scripts\ISpawnableObject.cs" />
     <Compile Include="Assets\Scripts\KillPlayerZone.cs" />
     <Compile Include="Assets\Scripts\ObjectSpawner.cs" />
