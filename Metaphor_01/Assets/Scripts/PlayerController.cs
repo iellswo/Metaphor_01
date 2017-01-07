@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     public string animationStateStanding = "Standing";
     public string animationStateWalking = "Walking";
     public string animationStateJumping = "Jumping";
+    public float maxPowerUpBarChangeRate = 1.0f;
 
     [Header("Ground Movement Data")]
     [Tooltip("How quickly the player accelerates from standing to running on the ground (m/s/s).")]
@@ -29,8 +30,11 @@ public class PlayerController : MonoBehaviour
     public float airForwardAcceleration = 0.0f;
     public float airReverseAcceleration = 1.0f;
     public float airRunningFriction = 0.0f;
+    public float airMaxSpeed = float.PositiveInfinity;
     [Tooltip("How quickly the player rises when they begin to jump (m/s)")]
     public float jumpRisingVelocity = 10.0f;
+    [Tooltip("How much speed is added to the player's forward velocity when they jump. (m/s)")]
+    public float forwardJumpVelocityBoost = 1.0f;
     [Tooltip("How quickly the player gains downwards velocity whilte airborne (m/s/s)")]
     public float gravity = 10.0f;
     [Tooltip("Player's max speed when falling (m/s)")]
@@ -75,6 +79,7 @@ public class PlayerController : MonoBehaviour
     private float timeInCurrentState = 0.0f;
 
     private float currentAirWalkPowerUpMeter = 0.0f;
+    private bool wasUsingAirWalkLastFrame = false;
 
     private Vector2 currentVelocity = Vector2.zero;
 
@@ -140,6 +145,10 @@ public class PlayerController : MonoBehaviour
         }
 
         float maxSpeed = groundMaxSpeed;
+        if (currentMovementState == ECurrentMovementState.Airborne)
+        {
+            maxSpeed = airMaxSpeed;
+        }
         // Cap speed in both directions.
         if (currentVelocity.x > maxSpeed)
             currentVelocity.x = maxSpeed;
@@ -278,6 +287,11 @@ public class PlayerController : MonoBehaviour
             // Jump action.
             SetCurrentState(ECurrentMovementState.Airborne);
             currentVelocity.y = jumpRisingVelocity;
+            currentVelocity.x += horizInput * forwardJumpVelocityBoost;
+            if (wasUsingAirWalkLastFrame)
+            {
+                currentAirWalkPowerUpMeter -= airWalkJumpLoss;
+            }
         }
         else if (isOnGround && currentMovementState == ECurrentMovementState.Airborne)
         {
@@ -289,7 +303,6 @@ public class PlayerController : MonoBehaviour
             // Air walk after jump.
             SetCurrentState(ECurrentMovementState.Grounded);
             isUsingAirWalk = true;
-            currentAirWalkPowerUpMeter -= airWalkJumpLoss;
         }
         else if (!isOnGround && currentMovementState == ECurrentMovementState.Grounded)
         {
@@ -304,6 +317,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        wasUsingAirWalkLastFrame = isUsingAirWalk;
         if (isUsingAirWalk)
         {
             currentAirWalkPowerUpMeter -= Time.deltaTime * Mathf.Abs(currentVelocity.x / groundMaxSpeed);
@@ -315,7 +329,8 @@ public class PlayerController : MonoBehaviour
         {
             powerUpBar.gameObject.SetActive(true);
             Vector3 scale = powerUpBar.transform.localScale;
-            scale.x = currentAirWalkPowerUpMeter / maxAirWalkDistance;
+            float targetScale = currentAirWalkPowerUpMeter / maxAirWalkDistance;
+            scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
             powerUpBar.transform.localScale = scale;
         }
         else
