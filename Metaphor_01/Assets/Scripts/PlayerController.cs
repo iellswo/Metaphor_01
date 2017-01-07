@@ -29,8 +29,11 @@ public class PlayerController : MonoBehaviour
     public float airForwardAcceleration = 0.0f;
     public float airReverseAcceleration = 1.0f;
     public float airRunningFriction = 0.0f;
+    public float airMaxSpeed = float.PositiveInfinity;
     [Tooltip("How quickly the player rises when they begin to jump (m/s)")]
     public float jumpRisingVelocity = 10.0f;
+    [Tooltip("How much speed is added to the player's forward velocity when they jump. (m/s)")]
+    public float forwardJumpVelocityBoost = 1.0f;
     [Tooltip("How quickly the player gains downwards velocity whilte airborne (m/s/s)")]
     public float gravity = 10.0f;
     [Tooltip("Player's max speed when falling (m/s)")]
@@ -140,6 +143,10 @@ public class PlayerController : MonoBehaviour
         }
 
         float maxSpeed = groundMaxSpeed;
+        if (currentMovementState == ECurrentMovementState.Airborne)
+        {
+            maxSpeed = airMaxSpeed;
+        }
         // Cap speed in both directions.
         if (currentVelocity.x > maxSpeed)
             currentVelocity.x = maxSpeed;
@@ -278,6 +285,7 @@ public class PlayerController : MonoBehaviour
             // Jump action.
             SetCurrentState(ECurrentMovementState.Airborne);
             currentVelocity.y = jumpRisingVelocity;
+            currentVelocity.x += horizInput * forwardJumpVelocityBoost;
         }
         else if (isOnGround && currentMovementState == ECurrentMovementState.Airborne)
         {
