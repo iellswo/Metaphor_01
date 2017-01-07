@@ -139,7 +139,7 @@ Transform:
   m_GameObject: {fileID: 1000011908923938}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.106, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0, y: 1, z: 1}
   m_Children:
   - {fileID: 4000012379822438}
   m_Father: {fileID: 4000014210205762}
@@ -195,6 +195,7 @@ MonoBehaviour:
   animationStateStanding: Standing
   animationStateWalking: Walking
   animationStateJumping: Jumping
+  maxPowerUpBarChangeRate: 2
   groundForwardAcceleration: 5
   groundReverseAcceleration: 20
   groundRunningFriction: 4
@@ -203,7 +204,9 @@ MonoBehaviour:
   airForwardAcceleration: 0
   airReverseAcceleration: 1
   airRunningFriction: 0
+  airMaxSpeed: Infinity
   jumpRisingVelocity: 14
+  forwardJumpVelocityBoost: 1
   gravity: 40
   maxFallSpeed: 10
   fallingAnimationStartVelocity: 5
