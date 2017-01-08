@@ -44,14 +44,28 @@ public class PlayerController : MonoBehaviour
     public float fallingAnimationEndVelocity = 1.0f;
 
     [Header("Air Walk Powerup")]
+    public Color airWalkPowerUpBarColor = Color.red;
     [Tooltip("How far the player can move horizontally with the air walk powerup.")]
     public float maxAirWalkDistance = 2.0f;
     [Tooltip("How much air walk power the player loses when they jump while air walking.")]
     public float airWalkJumpLoss = 2.0f;
 
+    [Header("Low Gravity Powerup")]
+    public Color lowGravityPowerUpBarColor = Color.yellow;
+    public float maxLowGravityTime = 8.0f;
+    public float lowGravityTimeLossRate = 1.0f;
+    public float lowGravityDistanceLossRate = 1.0f;
+    public float lowGravityJumpRisingVelocity = 10.0f;
+    public float lowGravityGravity = 2.5f;
+    public float lowGravityAirControl = 1.0f;
+    public float lowGravityGroundForwardAcceleration = 0.5f;
+    public float lowGravityGroundReverseAcceleration = 1.0f;
+    public float lowGravityGroundRunningFriction = 0.1f;
+
     [Header("GameObject Connections")]
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
     public Transform powerUpBar;
+    public SpriteRenderer powerUpBarGraphic;
     [Tooltip("The particle system on the player that makes SFX for air walking.")]
     public ParticleSystem airWalkEmitter;
 
@@ -88,6 +102,8 @@ public class PlayerController : MonoBehaviour
     private float currentAirWalkPowerUpMeter = 0.0f;
     private bool wasUsingAirWalkLastFrame = false;
 
+    private float currentLowGravityPowerUpMeter = 0.0f;
+
     private Vector2 currentVelocity = Vector2.zero;
 
     private Vector2 lastRespawnPoint = Vector2.zero;
@@ -121,13 +137,13 @@ public class PlayerController : MonoBehaviour
         float forwardAcceleration, skidAcceleration, frictionAcceleration;
         if (currentMovementState == ECurrentMovementState.Grounded)
         {
-            forwardAcceleration = groundForwardAcceleration;
-            skidAcceleration = groundReverseAcceleration;
-            frictionAcceleration = groundRunningFriction;
+            forwardAcceleration = currentLowGravityPowerUpMeter <= 0.0f ? groundForwardAcceleration : lowGravityGroundForwardAcceleration;
+            skidAcceleration = currentLowGravityPowerUpMeter <= 0.0f ? groundReverseAcceleration : lowGravityGroundReverseAcceleration;
+            frictionAcceleration = currentLowGravityPowerUpMeter <= 0.0f ? groundRunningFriction : lowGravityGroundRunningFriction;
         }
         else
         {
-            forwardAcceleration = airForwardAcceleration;
+            forwardAcceleration = currentLowGravityPowerUpMeter <= 0.0f ? airForwardAcceleration : lowGravityAirControl;
             skidAcceleration = airReverseAcceleration;
             frictionAcceleration = airRunningFriction;
         }
@@ -203,7 +219,8 @@ public class PlayerController : MonoBehaviour
                 break;
             case ECurrentMovementState.Airborne:
                 isOnGround = false;
-                currentVelocity.y -= gravity * Time.deltaTime;
+                float currentGravity = currentLowGravityPowerUpMeter <= 0.0f ? gravity : lowGravityGravity;
+                currentVelocity.y -= currentGravity * Time.deltaTime;
                 currentVelocity.y = Mathf.Max(currentVelocity.y, -maxFallSpeed);
                 Vector3 offset = (Vector3)currentVelocity * Time.deltaTime;
 
@@ -288,9 +305,10 @@ public class PlayerController : MonoBehaviour
         }
         if (canJump && currentInput.jumpDown)
         {
+            float jumpVelocity = currentLowGravityPowerUpMeter <= 0.0f ? jumpRisingVelocity : lowGravityJumpRisingVelocity;
             // Jump action.
             SetCurrentState(ECurrentMovementState.Airborne);
-            currentVelocity.y = jumpRisingVelocity;
+            currentVelocity.y = jumpVelocity;
             currentVelocity.x += horizInput * forwardJumpVelocityBoost;
             if (wasUsingAirWalkLastFrame)
             {
@@ -329,18 +347,27 @@ public class PlayerController : MonoBehaviour
         }
 
         // Powerup bar
+        Vector3 scale = powerUpBar.transform.localScale;
         if (currentAirWalkPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
-            Vector3 scale = powerUpBar.transform.localScale;
+            powerUpBarGraphic.color = airWalkPowerUpBarColor;
             float targetScale = currentAirWalkPowerUpMeter / maxAirWalkDistance;
             scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
-            powerUpBar.transform.localScale = scale;
+        }
+        else if (currentLowGravityPowerUpMeter > 0.0f)
+        {
+            powerUpBar.gameObject.SetActive(true);
+            powerUpBarGraphic.color = lowGravityPowerUpBarColor;
+            float targetScale = currentLowGravityPowerUpMeter / maxLowGravityTime;
+            scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
         }
         else
         {
+            scale.x = 0.0f;
             powerUpBar.gameObject.SetActive(false);
         }
+        powerUpBar.transform.localScale = scale;
 
         // Cameras
         CameraZone cameraZone = null;
@@ -402,6 +429,9 @@ public class PlayerController : MonoBehaviour
             spriteAnimator.ForceStateNormalizedTime(Mathf.InverseLerp(fallingAnimationStartVelocity, fallingAnimationEndVelocity, currentVelocity.y));
         }
 
+        currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
+        currentLowGravityPowerUpMeter -= lowGravityDistanceLossRate * Mathf.Abs(currentVelocity.x) * Time.deltaTime;
+
         transform.position = new Vector3(transform.position.x, transform.position.y, -1);
     }
 
@@ -411,6 +441,9 @@ public class PlayerController : MonoBehaviour
         {
             case PowerUp.EPowerUpType.AirWalk:
                 currentAirWalkPowerUpMeter = maxAirWalkDistance;
+                break;
+            case PowerUp.EPowerUpType.LowGravity:
+                currentLowGravityPowerUpMeter = maxLowGravityTime;
                 break;
             default:
                 Debug.Log("Powerup type not implemented.");
