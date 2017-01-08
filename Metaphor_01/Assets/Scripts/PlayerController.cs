@@ -60,11 +60,18 @@ public class PlayerController : MonoBehaviour
         public bool right, left, jumpDown, jumpHeld;
         public static SInput GetCurrentInput()
         {
+            //Steamworks.SteamControllerState_t controllerState;
+            //if (Steamworks.SteamController.GetControllerState(0, out controllerState))
+            //{
+            //    Debug.Log(controllerState);
+            //}
+
             SInput ret = new SInput();
-            ret.left = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
-            ret.right = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
-            ret.jumpDown = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space);
-            ret.jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
+            float horizontal = Input.GetAxis("Horizontal");
+            ret.left = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A) || horizontal < 0.0f;
+            ret.right = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D) || horizontal > 0.0f;
+            ret.jumpDown = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Fire1");
+            ret.jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || Input.GetButton("Fire1");
             return ret;
         }
     }
@@ -90,16 +97,13 @@ public class PlayerController : MonoBehaviour
     void Awake()
     {
         lastRespawnPoint = transform.position;
+        //Steamworks.SteamAPI.Init(); // TODO SHould move this to a GameManager.
+        //Steamworks.SteamController.Init("");
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.F1))
-        {
-            Debug.Log(currentMovementState);
-        }
-
         timeInCurrentState += Time.deltaTime;
 
         SInput currentInput = SInput.GetCurrentInput();
