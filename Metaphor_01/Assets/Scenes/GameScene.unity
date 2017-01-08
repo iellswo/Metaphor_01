@@ -904,7 +904,7 @@ Prefab:
     - target: {fileID: 114000011971267226, guid: e18f58d521fef1b4fb67caf77ae819e3,
         type: 2}
       propertyPath: groundMaxSpeed
-      value: 4
+      value: 3.5
       objectReference: {fileID: 0}
     - target: {fileID: 114000011971267226, guid: e18f58d521fef1b4fb67caf77ae819e3,
         type: 2}
@@ -945,6 +945,11 @@ Prefab:
         type: 2}
       propertyPath: airMaxSpeed
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011971267226, guid: e18f58d521fef1b4fb67caf77ae819e3,
+        type: 2}
+      propertyPath: groundRunningFriction
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
