@@ -7,6 +7,7 @@ public class PowerUp : ISpawnableObject
     {
         AirWalk = 0,
         LowGravity = 1,
+        Flying = 2,
     }
     public EPowerUpType powerUpType;
 }
