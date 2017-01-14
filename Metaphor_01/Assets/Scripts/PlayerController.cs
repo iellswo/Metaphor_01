@@ -103,6 +103,7 @@ public class PlayerController : MonoBehaviour
     private ECurrentMovementState currentMovementState = ECurrentMovementState.Grounded;
     private float timeInCurrentState = 0.0f;
 
+    private float currentPowerupMeterMaxValue = 0.0f;
     private float currentAirWalkPowerUpMeter = 0.0f;
     private bool wasUsingAirWalkLastFrame = false;
     private float currentLowGravityPowerUpMeter = 0.0f;
@@ -391,21 +392,21 @@ public class PlayerController : MonoBehaviour
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = airWalkPowerUpBarColor;
-            float targetScale = currentAirWalkPowerUpMeter / maxAirWalkDistance;
+            float targetScale = currentAirWalkPowerUpMeter / currentPowerupMeterMaxValue;
             scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
         }
         else if (currentLowGravityPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = lowGravityPowerUpBarColor;
-            float targetScale = currentLowGravityPowerUpMeter / maxLowGravityTime;
+            float targetScale = currentLowGravityPowerUpMeter / currentPowerupMeterMaxValue;
             scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
         }
         else if (currentFlyingPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = flyingPowerUpBarColor;
-            float targetScale = currentFlyingPowerUpMeter / flyingMaxDuration;
+            float targetScale = currentFlyingPowerUpMeter / currentPowerupMeterMaxValue;
             scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
         }
         else
@@ -483,16 +484,20 @@ public class PlayerController : MonoBehaviour
 
     public void GetPowerUp(PowerUp powerUp)
     {
+        float? overrideDuration = powerUp.overrideDuration;
         switch (powerUp.powerUpType)
         {
             case PowerUp.EPowerUpType.AirWalk:
-                currentAirWalkPowerUpMeter = maxAirWalkDistance;
+                currentAirWalkPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : maxAirWalkDistance;
+                currentPowerupMeterMaxValue = currentAirWalkPowerUpMeter;
                 break;
             case PowerUp.EPowerUpType.LowGravity:
-                currentLowGravityPowerUpMeter = maxLowGravityTime;
+                currentLowGravityPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : maxLowGravityTime;
+                currentPowerupMeterMaxValue = currentLowGravityPowerUpMeter;
                 break;
             case PowerUp.EPowerUpType.Flying:
-                currentFlyingPowerUpMeter = flyingMaxDuration;
+                currentFlyingPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : flyingMaxDuration;
+                currentPowerupMeterMaxValue = currentFlyingPowerUpMeter;
                 break;
             default:
                 Debug.Log("Powerup type not implemented.");
