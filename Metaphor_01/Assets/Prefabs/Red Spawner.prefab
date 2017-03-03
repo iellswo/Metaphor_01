@@ -53,4 +53,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectToSpawn: {fileID: 114000014085389514, guid: 9470a9e6347ff764c98477890366e974,
     type: 2}
+  spawnData: []
   timeToRespawn: 5
