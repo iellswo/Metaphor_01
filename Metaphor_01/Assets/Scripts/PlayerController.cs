@@ -66,10 +66,12 @@ public class PlayerController : MonoBehaviour
     public Color flyingPowerUpBarColor = Color.white;
     public float flyingMaxDuration = 5.0f;
     public float flyingRisingAcceleration = 10.0f;
+    public float flyingDescendingAcceleration = 10.0f;
     public float flyingAirControl = 1.0f;
     public float flyingMaxHorizontalSpeed = 100.0f;
     public float flyingMaxRiseSpeed = 100.0f;
     public float flyingMaxFallSpeed = 10.0f;
+    public float flyingAirFriction = 1.0f;
 
     [Header("GameObject Connections")]
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
@@ -80,13 +82,15 @@ public class PlayerController : MonoBehaviour
 
     private struct SInput
     {
-        public bool right, left, jumpDown, jumpHeld, resetDown;
+        public bool right, left, down, jumpDown, jumpHeld, resetDown;
         public static SInput GetCurrentInput()
         {
             SInput ret = new SInput();
             float horizontal = Input.GetAxis("Horizontal");
+            float vertical = Input.GetAxis("Vertical");
             ret.left = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A) || horizontal < 0.0f;
             ret.right = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D) || horizontal > 0.0f;
+            ret.down = Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || vertical < 0.0f;
             ret.jumpDown = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Fire1");
             ret.jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1");
             ret.resetDown = Input.GetKeyDown(KeyCode.R) || Input.GetButtonDown("Start");
@@ -106,6 +110,7 @@ public class PlayerController : MonoBehaviour
     private float currentPowerupMeterMaxValue = 0.0f;
     private float currentAirWalkPowerUpMeter = 0.0f;
     private bool wasUsingAirWalkLastFrame = false;
+    private bool isUsingFlightPowerup = false;
     private float currentLowGravityPowerUpMeter = 0.0f;
     private float currentFlyingPowerUpMeter = 0.0f;
 
@@ -183,13 +188,12 @@ public class PlayerController : MonoBehaviour
         }
 
         float maxSpeed = groundMaxSpeed;
-        bool isFlying = false;
         if (currentMovementState == ECurrentMovementState.Airborne)
         {
             maxSpeed = airMaxSpeed;
-            if (currentInput.jumpHeld && currentFlyingPowerUpMeter > 0.0f)
+            if (timeInCurrentState > 0.0f && currentInput.jumpDown && currentFlyingPowerUpMeter > 0.0f)
             {
-                isFlying = true;
+                isUsingFlightPowerup = true;
                 maxSpeed = flyingMaxHorizontalSpeed;
             }
         }
@@ -210,6 +214,8 @@ public class PlayerController : MonoBehaviour
         switch (currentMovementState)
         {
             case ECurrentMovementState.Grounded:
+                isUsingFlightPowerup = false;
+
                 // Check for the player walking into walls.
                 float wallCheckDistance = 0.0f;
                 if (currentOffset.x != 0.0f)
@@ -250,11 +256,22 @@ public class PlayerController : MonoBehaviour
                 {
                     currentGravity = lowGravityGravity;
                 }
-                else if (currentFlyingPowerUpMeter > 0.0f && currentInput.jumpHeld)
+                else if (isUsingFlightPowerup)
                 {
-                    currentGravity = -flyingRisingAcceleration;
+                    currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0.0f, Time.deltaTime * flyingAirFriction);
+                    currentVelocity.y = Mathf.MoveTowards(currentVelocity.y, 0.0f, Time.deltaTime * flyingAirFriction);
+                    currentGravity = 0.0f;
                     maxFall = -flyingMaxFallSpeed;
                     maxRise = flyingMaxRiseSpeed;
+                    currentVelocity += Vector2.right * horizInput * flyingAirControl * Time.deltaTime;
+                    if (currentInput.jumpHeld)
+                    {
+                        currentVelocity += Vector2.up * flyingRisingAcceleration * Time.deltaTime;
+                    }
+                    else if (currentInput.down)
+                    {
+                        currentVelocity += Vector2.down * flyingDescendingAcceleration * Time.deltaTime;
+                    }
                 }
                 currentVelocity.y -= currentGravity * Time.deltaTime;
                 currentVelocity.y = Mathf.Clamp(currentVelocity.y, maxFall, maxRise);
@@ -381,9 +398,13 @@ public class PlayerController : MonoBehaviour
             currentAirWalkPowerUpMeter -= Time.deltaTime * Mathf.Abs(currentVelocity.x / groundMaxSpeed);
             airWalkEmitter.Emit(1);
         }
-        if (isFlying)
+        if (isUsingFlightPowerup)
         {
-            currentFlyingPowerUpMeter -= Time.deltaTime;
+            currentFlyingPowerUpMeter -= Time.deltaTime * currentVelocity.magnitude;
+            if (currentFlyingPowerUpMeter <= 0.0f)
+            {
+                isUsingFlightPowerup = false;
+            }
         }
 
         // Powerup bar
