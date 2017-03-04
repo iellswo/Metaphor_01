@@ -1951,6 +1951,11 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 476425050}
     m_Modifications:
+    - target: {fileID: 114288069818922710, guid: 98a890c5b2ad11047b7737fe357bf619,
+        type: 2}
+      propertyPath: spawnData.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4890211320370086, guid: 98a890c5b2ad11047b7737fe357bf619, type: 2}
       propertyPath: m_LocalPosition.x
       value: -457.15
@@ -1982,6 +1987,11 @@ Prefab:
     - target: {fileID: 4890211320370086, guid: 98a890c5b2ad11047b7737fe357bf619, type: 2}
       propertyPath: m_RootOrder
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114288069818922710, guid: 98a890c5b2ad11047b7737fe357bf619,
+        type: 2}
+      propertyPath: spawnData.Array.data[0].value
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 98a890c5b2ad11047b7737fe357bf619, type: 2}
@@ -2572,6 +2582,11 @@ Prefab:
         type: 2}
       propertyPath: flyingAirControl
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011971267226, guid: e18f58d521fef1b4fb67caf77ae819e3,
+        type: 2}
+      propertyPath: flyingMaxDuration
+      value: 15
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
