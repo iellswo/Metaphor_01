@@ -23,7 +23,7 @@ GameObject:
   m_Layer: 0
   m_Name: YellowPowerUpSpawner
   m_TagString: Untagged
-  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -53,4 +53,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectToSpawn: {fileID: 114000014085389514, guid: 578b29f0645d5ab43852aed249977e58,
     type: 2}
+  spawnData: []
   timeToRespawn: 10
