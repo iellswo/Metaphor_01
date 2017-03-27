@@ -3,24 +3,32 @@ using System.Collections;
 
 public class ObjectSpawner : MonoBehaviour
 {
-    public ISpawnableObject objectToSpawn;
+    public SpawnableObject objectToSpawn;
 
     public enum ESpawnProperty
     {
         PowerupDuration,
     }
+
     [System.Serializable]
     public struct SSpawnData
     {
         public ESpawnProperty property;
         public float value;
     }
+
     public SSpawnData[] spawnData;
 
-    public float timeToRespawn = 10.0f;
-    private float timeLeftBeforeNextRespawn = 0.0f;
+    public bool respawnOnTimer = false;
+    public bool respawnOnDeath = true;
 
-    private ISpawnableObject spawnedObject = null;
+    public float timeToRespawn = 10.0f;
+
+    private float timeLeftBeforeNextRespawn = 0.0f;
+    private bool reported = false;
+    private bool deathMarked = true;
+
+    private SpawnableObject spawnedObject = null;
 
     // Use this for initialization
     void Start()
@@ -31,7 +39,7 @@ public class ObjectSpawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (CanRespawn())
+        if (respawnOnTimer && CanRespawn())
         {
             timeLeftBeforeNextRespawn -= Time.deltaTime;
             if (timeLeftBeforeNextRespawn <= 0.0f)
@@ -40,13 +48,33 @@ public class ObjectSpawner : MonoBehaviour
                 timeLeftBeforeNextRespawn = timeToRespawn;
             }
         }
+
+        if (respawnOnDeath && !reported)
+        {
+            SpawnTracker.ReportSpawner(this);
+            reported = true;
+        }
+
+        if (respawnOnDeath && deathMarked)
+        {
+            deathMarked = false;
+            if (CanRespawn())
+            {
+                Spawn();
+            }
+        }
+    }
+
+    public void FlagForRespawnOnDeath()
+    {
+        deathMarked = true;
     }
 
     private void Spawn()
     {
         if (spawnedObject == null)
         {
-            spawnedObject = GameObject.Instantiate<ISpawnableObject>(objectToSpawn);
+            spawnedObject = GameObject.Instantiate<SpawnableObject>(objectToSpawn);
         }
         spawnedObject.Spawn(transform.position, spawnData);
     }

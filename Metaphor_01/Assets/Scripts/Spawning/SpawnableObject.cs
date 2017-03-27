@@ -2,7 +2,7 @@
 using System.Collections;
 using System;
 
-public class ISpawnableObject : MonoBehaviour
+public class SpawnableObject : MonoBehaviour
 {
     public void Spawn(Vector3 position, ObjectSpawner.SSpawnData[] data)
     {

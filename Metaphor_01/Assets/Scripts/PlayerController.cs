@@ -349,13 +349,17 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+        // This bracket is reached if the player is dead or reset is pressed.  Respawn all objects and player.
         else
         {
             transform.position = lastRespawnPoint;
             currentVelocity = Vector2.zero;
             SetCurrentState(ECurrentMovementState.Airborne);
             spriteAnimator.CrossFade(animationStateJumping, 0.0f);
+
+            SpawnTracker.TriggerReset();
         }
+
         if (canJump && currentInput.jumpDown)
         {
             float jumpVelocity = currentLowGravityPowerUpMeter <= 0.0f ? jumpRisingVelocity : lowGravityJumpRisingVelocity;
