@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
     public string animationStateStanding = "Standing";
     public string animationStateWalking = "Walking";
     public string animationStateJumping = "Jumping";
+    [Tooltip("List here all sprite renderers that you want to flip when the player reverses direction.")]
+    public List<SpriteRenderer> BodySprites = new List<SpriteRenderer>();
     public float maxPowerUpBarChangeRate = 1.0f;
 
     [Header("Ground Movement Data")]
@@ -469,11 +471,17 @@ public class PlayerController : MonoBehaviour
         float velocity = currentVelocity.x;
         if (currentVelocity.x > 0.0f)
         {
-            spriteAnimator.GetComponent<SpriteRenderer>().flipX = false;
+            foreach (SpriteRenderer s in BodySprites)
+            {
+                s.flipX = false;
+            }
         }
         else if (currentVelocity.x < 0.0f)
         {
-            spriteAnimator.GetComponent<SpriteRenderer>().flipX = true;
+            foreach (SpriteRenderer s in BodySprites)
+            {
+                s.flipX = true;
+            }
         }
         velocity = Mathf.Abs(velocity);
         if (isOnGround || isUsingAirWalk)
