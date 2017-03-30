@@ -190,6 +190,58 @@ Transform:
   m_PrefabParentObject: {fileID: 4000012452059114, guid: 4691e046619242f4f83242a2acd3a799,
     type: 2}
   m_PrefabInternal: {fileID: 14574046}
+--- !u!1 &52105723
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 1505458039396954, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 391606749}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1467544801}
+  - component: {fileID: 52105725}
+  - component: {fileID: 52105724}
+  m_Layer: 2
+  m_Name: Double Climb Camera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &52105724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 114719025084232620, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 391606749}
+  m_GameObject: {fileID: 52105723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 300faddc8645ef84fafd5cad0c3a785d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  priority: 0
+  top: 204.16
+  bottom: 3
+  left: -800.93
+  right: -1.11
+  screenHeight: 18
+  screenHeightAdjustSpeed: 1.2
+--- !u!61 &52105725
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 61028798349007234, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 391606749}
+  m_GameObject: {fileID: 52105723}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Size: {x: 11, y: 20}
 --- !u!1001 &197643865
 Prefab:
   m_ObjectHideFlags: 0
@@ -385,11 +437,20 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 5a718f68c6569194db99d5d27497bd88, type: 2}
   m_IsPrefabParent: 0
---- !u!4 &341839149 stripped
+--- !u!4 &341839149
 Transform:
+  m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 4817384713938530, guid: 5a718f68c6569194db99d5d27497bd88,
     type: 2}
   m_PrefabInternal: {fileID: 341839148}
+  m_GameObject: {fileID: 2059323944}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -514.78, y: 27.25, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 639274827}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &368092642
 Prefab:
   m_ObjectHideFlags: 0
@@ -677,7 +738,7 @@ Prefab:
     - target: {fileID: 114719025084232620, guid: 5a718f68c6569194db99d5d27497bd88,
         type: 2}
       propertyPath: top
-      value: 204.16
+      value: 203
       objectReference: {fileID: 0}
     - target: {fileID: 61028798349007234, guid: 5a718f68c6569194db99d5d27497bd88,
         type: 2}
@@ -707,9 +768,14 @@ Prefab:
     - target: {fileID: 114719025084232620, guid: 5a718f68c6569194db99d5d27497bd88,
         type: 2}
       propertyPath: screenHeight
-      value: 12
+      value: 10
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 1505458039396954, guid: 5a718f68c6569194db99d5d27497bd88, type: 2}
+      propertyPath: m_Name
+      value: Main Bounding Box
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 61028798349007234, guid: 5a718f68c6569194db99d5d27497bd88, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 5a718f68c6569194db99d5d27497bd88, type: 2}
   m_IsPrefabParent: 0
 --- !u!1001 &619109533
@@ -853,6 +919,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &643871982 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114000011971267226, guid: e18f58d521fef1b4fb67caf77ae819e3,
+    type: 2}
+  m_PrefabInternal: {fileID: 1984322671}
+  m_Script: {fileID: 11500000, guid: 5af052ace4c3e194e809b0a3fbcde2fb, type: 3}
 --- !u!1 &664568417
 GameObject:
   m_ObjectHideFlags: 0
@@ -1587,6 +1659,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1062951577}
   - component: {fileID: 1062951578}
+  - component: {fileID: 1062951579}
   m_Layer: 0
   m_Name: Scene Manager
   m_TagString: Untagged
@@ -1619,6 +1692,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Objects: []
+--- !u!114 &1062951579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1062951576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fedb183e22c349347ac497606a2c8477, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Player: {fileID: 643871982}
+  MainBoundingBox: {fileID: 2044807980}
+  LerpSpeedX: 2
+  LerpSpeedY: 3
 --- !u!4 &1086446310 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4519797280837640, guid: 85385ae980671474ab863b4a21d1478e,
@@ -2123,11 +2211,20 @@ Transform:
   m_PrefabParentObject: {fileID: 4908807048830588, guid: 71d3272d182275245939e2c6eea33855,
     type: 2}
   m_PrefabInternal: {fileID: 503379878}
---- !u!4 &1467544801 stripped
+--- !u!4 &1467544801
 Transform:
+  m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 4817384713938530, guid: 5a718f68c6569194db99d5d27497bd88,
     type: 2}
   m_PrefabInternal: {fileID: 391606749}
+  m_GameObject: {fileID: 52105723}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -633.99, y: 18.64, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1035699523}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1489425990
 GameObject:
   m_ObjectHideFlags: 0
@@ -3084,6 +3181,108 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
   m_IsPrefabParent: 0
+--- !u!1 &2044807979
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 1505458039396954, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 519954219}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 2044807982}
+  - component: {fileID: 2044807980}
+  m_Layer: 2
+  m_Name: Main Bounding Box
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2044807980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 114719025084232620, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 519954219}
+  m_GameObject: {fileID: 2044807979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 300faddc8645ef84fafd5cad0c3a785d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  priority: 0
+  top: 203
+  bottom: 3
+  left: -800.93
+  right: -1.11
+  screenHeight: 10
+  screenHeightAdjustSpeed: 1
+--- !u!4 &2044807982
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 4817384713938530, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 519954219}
+  m_GameObject: {fileID: 2044807979}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -399.7, y: 103, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2059323944
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 1505458039396954, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 341839148}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 341839149}
+  - component: {fileID: 2059323946}
+  - component: {fileID: 2059323945}
+  m_Layer: 2
+  m_Name: Suicide Jump Camera Zone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2059323945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 114719025084232620, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 341839148}
+  m_GameObject: {fileID: 2059323944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 300faddc8645ef84fafd5cad0c3a785d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  priority: 3
+  top: 204.16
+  bottom: 3
+  left: -800.93
+  right: -1.11
+  screenHeight: 24
+  screenHeightAdjustSpeed: 1.4
+--- !u!61 &2059323946
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 61028798349007234, guid: 5a718f68c6569194db99d5d27497bd88,
+    type: 2}
+  m_PrefabInternal: {fileID: 341839148}
+  m_GameObject: {fileID: 2059323944}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Size: {x: 19.6, y: 30.1}
 --- !u!4 &2114887875 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4908807048830588, guid: 71d3272d182275245939e2c6eea33855,

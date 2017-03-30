@@ -98,13 +98,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private enum ECurrentMovementState
+    public enum ECurrentMovementState
     {
         Grounded,
         Airborne,
         Dead,
     }
-    private ECurrentMovementState currentMovementState = ECurrentMovementState.Grounded;
+
+    [HideInInspector]
+    public ECurrentMovementState currentMovementState = ECurrentMovementState.Grounded;
     private float timeInCurrentState = 0.0f;
 
     private float currentPowerupMeterMaxValue = 0.0f;
