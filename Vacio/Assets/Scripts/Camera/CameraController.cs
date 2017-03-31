@@ -65,13 +65,27 @@ public class CameraController : MonoBehaviour
         if (Player.currentMovementState == PlayerController.ECurrentMovementState.Grounded)
         {
             _lastSafeY = playerPosition.y;
+
+            cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
         }
-
-        cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
-
-        if (Mathf.Abs(cameraPosition.y - playerPosition.y) > (.5 * MainBoundingBox.screenHeight - PlayerWindowYFromEdge))
+        else
         {
-            cameraPosition.y = Lerp(cameraPosition.y, playerPosition.y, LerpSpeedY); ;
+            float windowDistance = (.5f * MainBoundingBox.screenHeight - PlayerWindowYFromEdge);
+            if (Mathf.Abs(cameraPosition.y - playerPosition.y) >= windowDistance)
+            {
+                float desiredCameraY = cameraPosition.y;
+                if ((playerPosition.y - cameraPosition.y) > 0f && Player.currentVelocity.y > 0f)
+                {
+                    desiredCameraY = playerPosition.y - windowDistance;
+                }
+                else if ((playerPosition.y - cameraPosition.y) < 0f && Player.currentVelocity.y < 0f)
+                {
+                    desiredCameraY = playerPosition.y + windowDistance;
+                }
+
+                cameraPosition.y = desiredCameraY;
+                    //Lerp(cameraPosition.y, desiredCameraY, LerpSpeedY * 2);
+            }
         }
 
         // Handle Clamping

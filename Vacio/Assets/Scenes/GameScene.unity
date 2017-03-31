@@ -1709,7 +1709,7 @@ MonoBehaviour:
   LerpSpeedY: 3
   PlayerLeaderX: 3
   PlayerLeaderXMinSpeed: 0.5
-  PlayerWindowYFromEdge: 1.7
+  PlayerWindowYFromEdge: 2.5
 --- !u!4 &1086446310 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4519797280837640, guid: 85385ae980671474ab863b4a21d1478e,
@@ -2559,7 +2559,7 @@ Prefab:
     - target: {fileID: 114288069818922710, guid: 98a890c5b2ad11047b7737fe357bf619,
         type: 2}
       propertyPath: spawnData.Array.data[0].value
-      value: 20
+      value: 10000
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 98a890c5b2ad11047b7737fe357bf619, type: 2}
@@ -3056,11 +3056,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4000014210205762, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -640.29
+      value: -474.18
       objectReference: {fileID: 0}
     - target: {fileID: 4000014210205762, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 13.75
+      value: 29.76
       objectReference: {fileID: 0}
     - target: {fileID: 4000014210205762, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
       propertyPath: m_LocalPosition.z
