@@ -116,7 +116,8 @@ public class PlayerController : MonoBehaviour
     private float currentLowGravityPowerUpMeter = 0.0f;
     private float currentFlyingPowerUpMeter = 0.0f;
 
-    private Vector2 currentVelocity = Vector2.zero;
+    [HideInInspector]
+    public Vector2 currentVelocity = Vector2.zero;
 
     private Vector2 lastRespawnPoint = Vector2.zero;
 

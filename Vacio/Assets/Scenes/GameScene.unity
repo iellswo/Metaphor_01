@@ -1705,8 +1705,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: {fileID: 643871982}
   MainBoundingBox: {fileID: 2044807980}
-  LerpSpeedX: 2
+  LerpSpeedX: 2.35
   LerpSpeedY: 3
+  PlayerLeaderX: 3
+  PlayerLeaderXMinSpeed: 0.5
+  PlayerWindowYFromEdge: 1.7
 --- !u!4 &1086446310 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4519797280837640, guid: 85385ae980671474ab863b4a21d1478e,
@@ -3053,11 +3056,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4000014210205762, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -793.91
+      value: -640.29
       objectReference: {fileID: 0}
     - target: {fileID: 4000014210205762, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 4.75
+      value: 13.75
       objectReference: {fileID: 0}
     - target: {fileID: 4000014210205762, guid: e18f58d521fef1b4fb67caf77ae819e3, type: 2}
       propertyPath: m_LocalPosition.z

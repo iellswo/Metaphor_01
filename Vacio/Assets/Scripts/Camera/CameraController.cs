@@ -16,14 +16,29 @@ public class CameraController : MonoBehaviour
     [Tooltip("Changing this will effect how fast we attempt to move the camera's y coord towards the desired position.")]
     public float LerpSpeedY = 0.7f;
 
+    // We get the camera to focus ahead of the player when they are moving so that the player can see where they are going and what is ahead of them.
+    // This is accomplished by "tricking" the camera to think that the player is actually ahead of there actual position.  This defines that distance.
+    [Tooltip("How far ahead of the player we want our focus point.")]
+    public float PlayerLeaderX = 0f;
+
+    [Tooltip("How fast the player needs to move before we start leading the player.")]
+    public float PlayerLeaderXMinSpeed = 0.5f;
+
+    public float PlayerWindowYFromEdge = 1.5f;
+
+    private float _lastSafeY = 0f;
+
     // Use this for initialization
-    void Start ()
+    void Start()
     {
-		
-	}
+        Vector3 playerPosition = Player.gameObject.transform.position;
+
+        // Set camera position to calculated location.
+        Camera.main.transform.position = playerPosition;
+    }
 
     // LateUpdate is called after Update each frame
-    void LateUpdate ()
+    void LateUpdate()
     {
         // Handle orthographic size smoothing (zoom)
         Camera.main.orthographicSize = Mathf.MoveTowards(Camera.main.orthographicSize, MainBoundingBox.screenHeight / 2.0f, Time.deltaTime * MainBoundingBox.screenHeightAdjustSpeed);
@@ -35,12 +50,28 @@ public class CameraController : MonoBehaviour
         cameraPosition.z = (Vector3.back * 10f).z;
 
         // Handle x movement
+        if (Player.currentVelocity.x > PlayerLeaderXMinSpeed)
+        {
+            playerPosition.x += PlayerLeaderX;
+        }
+        else if (Player.currentVelocity.x < -1 * PlayerLeaderXMinSpeed)
+        {
+            playerPosition.x -= PlayerLeaderX;
+        }
+
         cameraPosition.x = Lerp(cameraPosition.x, playerPosition.x, LerpSpeedX);
 
         // Handle y movement
         if (Player.currentMovementState == PlayerController.ECurrentMovementState.Grounded)
         {
-            cameraPosition.y = Lerp(cameraPosition.y, playerPosition.y, LerpSpeedY);
+            _lastSafeY = playerPosition.y;
+        }
+
+        cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
+
+        if (Mathf.Abs(cameraPosition.y - playerPosition.y) > (.5 * MainBoundingBox.screenHeight - PlayerWindowYFromEdge))
+        {
+            cameraPosition.y = Lerp(cameraPosition.y, playerPosition.y, LerpSpeedY); ;
         }
 
         // Handle Clamping
@@ -49,9 +80,9 @@ public class CameraController : MonoBehaviour
 
         // Set camera position to calculated location.
         Camera.main.transform.position = cameraPosition;
-	}
+    }
 
-    private float Lerp (float a, float b, float speed)
+    private float Lerp(float a, float b, float speed)
     {
         return a + (Time.deltaTime * speed * (b - a));
     }
