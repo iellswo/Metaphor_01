@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(BoxCollider2D))]
 public class CameraZone : MonoBehaviour
 {
     [Tooltip("This camera zone's priority. Higher is more important.")]

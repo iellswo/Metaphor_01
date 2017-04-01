@@ -98,13 +98,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private enum ECurrentMovementState
+    public enum ECurrentMovementState
     {
         Grounded,
         Airborne,
         Dead,
     }
-    private ECurrentMovementState currentMovementState = ECurrentMovementState.Grounded;
+
+    [HideInInspector]
+    public ECurrentMovementState currentMovementState = ECurrentMovementState.Grounded;
     private float timeInCurrentState = 0.0f;
 
     private float currentPowerupMeterMaxValue = 0.0f;
@@ -114,11 +116,12 @@ public class PlayerController : MonoBehaviour
     private float currentLowGravityPowerUpMeter = 0.0f;
     private float currentFlyingPowerUpMeter = 0.0f;
 
-    private Vector2 currentVelocity = Vector2.zero;
+    [HideInInspector]
+    public Vector2 currentVelocity = Vector2.zero;
 
     private Vector2 lastRespawnPoint = Vector2.zero;
 
-    private List<CameraZone> currentCameraZones = new List<CameraZone>();
+    //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
     void Awake()
     {
@@ -322,7 +325,7 @@ public class PlayerController : MonoBehaviour
         if (currentMovementState != ECurrentMovementState.Dead)
         {
             // TODO Use nonalloc
-            currentCameraZones.Clear();
+            //currentCameraZones.Clear();
             Collider2D[] colliders = Physics2D.OverlapBoxAll(transform.position, characterHalfSize, 0.0f, 4); // 4 is IgnoreRaycast for triggers.
             foreach (Collider2D col in colliders)
             {
@@ -333,10 +336,10 @@ public class PlayerController : MonoBehaviour
                     canJump = false;
                     break;
                 }
-                else if (col.GetComponent<CameraZone>())
-                {
-                    currentCameraZones.Add(col.GetComponent<CameraZone>());
-                }
+                //else if (col.GetComponent<CameraZone>())
+                //{
+                //    currentCameraZones.Add(col.GetComponent<CameraZone>());
+                //}
                 else if (col.GetComponent<PlayerCheckpoint>() && lastRespawnPoint != (Vector2)col.transform.position)
                 {
                     // Check if we're resetting the respawn point.
@@ -442,28 +445,28 @@ public class PlayerController : MonoBehaviour
         powerUpBar.transform.localScale = scale;
 
         // Cameras
-        CameraZone cameraZone = null;
+        //CameraZone cameraZone = null;
         // TODO Camera smoothing.
-        foreach (CameraZone camera in currentCameraZones)
-        {
-            if (cameraZone == null || camera.priority > cameraZone.priority)
-            {
-                cameraZone = camera;
-            }
-        }
-        if (cameraZone != null)
-        {
-            Camera.main.orthographicSize = Mathf.MoveTowards(Camera.main.orthographicSize, cameraZone.screenHeight / 2.0f, Time.deltaTime * cameraZone.screenHeightAdjustSpeed);
-            Vector2 cameraSize = new Vector2(Camera.main.orthographicSize * Camera.main.aspect, Camera.main.orthographicSize);
-            Vector3 cameraPosition = transform.position + Vector3.back * 10.0f;
-            cameraPosition.x = Mathf.Clamp(cameraPosition.x, cameraZone.left + cameraSize.x, cameraZone.right - cameraSize.x);
-            cameraPosition.y = Mathf.Clamp(cameraPosition.y, cameraZone.bottom + cameraSize.y, cameraZone.top - cameraSize.y);
-            Camera.main.transform.position = cameraPosition;
-        }
-        else
-        {
-            Camera.main.transform.position = transform.position + Vector3.back * 10.0f;
-        }
+        //foreach (CameraZone camera in currentCameraZones)
+        //{
+        //    if (cameraZone == null || camera.priority > cameraZone.priority)
+        //    {
+        //        cameraZone = camera;
+        //    }
+        //}
+        //if (cameraZone != null)
+        //{
+        //    Camera.main.orthographicSize = Mathf.MoveTowards(Camera.main.orthographicSize, cameraZone.screenHeight / 2.0f, Time.deltaTime * cameraZone.screenHeightAdjustSpeed);
+        //    Vector2 cameraSize = new Vector2(Camera.main.orthographicSize * Camera.main.aspect, Camera.main.orthographicSize);
+        //    Vector3 cameraPosition = transform.position + Vector3.back * 10.0f;
+        //    cameraPosition.x = Mathf.Clamp(cameraPosition.x, cameraZone.left + cameraSize.x, cameraZone.right - cameraSize.x);
+        //    cameraPosition.y = Mathf.Clamp(cameraPosition.y, cameraZone.bottom + cameraSize.y, cameraZone.top - cameraSize.y);
+        //    Camera.main.transform.position = cameraPosition;
+        //}
+        //else
+        //{
+        //    Camera.main.transform.position = transform.position + Vector3.back * 10.0f;
+        //}
 
         // Animator facing
         float velocity = currentVelocity.x;
