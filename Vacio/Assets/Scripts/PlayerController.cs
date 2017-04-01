@@ -212,7 +212,8 @@ public class PlayerController : MonoBehaviour
         Vector3 currentOffset = currentVelocity * Time.deltaTime;
 
         RaycastHit2D hit;
-        int playerWorldCollisionMask = -1 + 4; // include All, exclude IgnoreRaycast
+        int playerWorldCollisionMask = ~4 & ~(1 << 8); // include All, exclude IgnoreRaycast
+        int playerFloorCollisionMask = (1 << 8) | ~4;
         Vector3 currentPosition = transform.position;
         bool canJump = false;
         bool isOnGround = true;
@@ -241,7 +242,7 @@ public class PlayerController : MonoBehaviour
                 }
                 currentPosition.x += currentOffset.x;
                 // Seek the player to the ground and slopes.
-                hit = Physics2D.Raycast(currentPosition, Vector2.down, maxSeekToGroundDistance + characterHalfSize.y, playerWorldCollisionMask);
+                hit = Physics2D.Raycast(currentPosition, Vector2.down, maxSeekToGroundDistance + characterHalfSize.y, playerFloorCollisionMask);
                 isOnGround = hit.collider != null;
                 if (isOnGround)
                 {
@@ -295,7 +296,8 @@ public class PlayerController : MonoBehaviour
                 // Move vertically
                 if (currentVelocity.y != 0.0f)
                 {
-                    hit = Physics2D.Raycast(currentPosition, Vector2.up * currentVelocity.y, Mathf.Abs(offset.y) + characterHalfSize.y, playerWorldCollisionMask);
+                    int mask = currentVelocity.y > 0 ? playerWorldCollisionMask : playerFloorCollisionMask;
+                    hit = Physics2D.Raycast(currentPosition, Vector2.up * currentVelocity.y, Mathf.Abs(offset.y) + characterHalfSize.y, mask);
                     if (hit.collider != null && hit.normal.y != 0.0f)
                     {
                         float targetY = hit.point.y + Mathf.Sign(hit.normal.y) * characterHalfSize.y;
