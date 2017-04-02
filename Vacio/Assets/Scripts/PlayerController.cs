@@ -298,6 +298,12 @@ public class PlayerController : MonoBehaviour
                 {
                     int mask = currentVelocity.y > 0 ? playerWorldCollisionMask : playerFloorCollisionMask;
                     hit = Physics2D.Raycast(currentPosition, Vector2.up * currentVelocity.y, Mathf.Abs(offset.y) + characterHalfSize.y, mask);
+
+                    if (hit.collider != null && hit.collider.GetComponent<Platform>())
+                    {
+                        hit.collider.GetComponent<Platform>().ReportLandedOn();
+                    }
+
                     if (hit.collider != null && hit.normal.y != 0.0f)
                     {
                         float targetY = hit.point.y + Mathf.Sign(hit.normal.y) * characterHalfSize.y;
