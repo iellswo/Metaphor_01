@@ -122,6 +122,9 @@ public class PlayerController : MonoBehaviour
     public Vector2 currentVelocity = Vector2.zero;
 
     private Vector2 lastRespawnPoint = Vector2.zero;
+    
+    private float fillMax = .755f;
+    private float fillMin = .515f;
 
     //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
@@ -425,34 +428,36 @@ public class PlayerController : MonoBehaviour
         }
 
         // Powerup bar
-        Vector3 scale = powerUpBar.transform.localScale;
+        // Vector3 scale = powerUpBar.transform.localScale;
         if (currentAirWalkPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = airWalkPowerUpBarColor;
             float targetScale = currentAirWalkPowerUpMeter / currentPowerupMeterMaxValue;
-            scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            //scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            AdjustFill(targetScale);
         }
         else if (currentLowGravityPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = lowGravityPowerUpBarColor;
             float targetScale = currentLowGravityPowerUpMeter / currentPowerupMeterMaxValue;
-            scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            //scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            AdjustFill(targetScale);
         }
         else if (currentFlyingPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = flyingPowerUpBarColor;
             float targetScale = currentFlyingPowerUpMeter / currentPowerupMeterMaxValue;
-            scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            //scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            AdjustFill(targetScale);
         }
         else
         {
-            scale.x = 0.0f;
             powerUpBar.gameObject.SetActive(false);
         }
-        powerUpBar.transform.localScale = scale;
+        //powerUpBar.transform.localScale = scale;
 
         // Cameras
         //CameraZone cameraZone = null;
@@ -567,5 +572,17 @@ public class PlayerController : MonoBehaviour
                 break;
         }
         spriteAnimator.CrossFade(animatorState, 0.0f);
+    }
+
+    private void AdjustFill(float percent)
+    {
+        float fillAmount = fillMin + (percent * (fillMax - fillMin));
+
+        Renderer rend = powerUpBarGraphic.GetComponent<Renderer>();
+        float curFill = rend.material.GetFloat("_Fill");
+
+        float destFill = Mathf.MoveTowards(curFill, fillAmount, maxPowerUpBarChangeRate * Time.deltaTime);
+
+        rend.material.SetFloat("_Fill", destFill);
     }
 }
