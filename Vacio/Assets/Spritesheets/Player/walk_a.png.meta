@@ -1,17 +1,17 @@
 fileFormatVersion: 2
-guid: b3c7555611bbf884bb9b63aa1885d852
-timeCreated: 1490761374
+guid: d59e792b6b7267d458d232a7a5edb6b2
+timeCreated: 1491268633
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: sheet_walk_backarm_0
-    21300002: sheet_walk_backarm_1
-    21300004: sheet_walk_backarm_2
-    21300006: sheet_walk_backarm_3
-    21300008: sheet_walk_backarm_4
-    21300010: sheet_walk_backarm_5
-    21300012: sheet_walk_backarm_6
-    21300014: sheet_walk_backarm_7
+    21300000: walk_a_0
+    21300002: walk_a_1
+    21300004: walk_a_2
+    21300006: walk_a_3
+    21300008: walk_a_4
+    21300010: walk_a_5
+    21300012: walk_a_6
+    21300014: walk_a_7
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -78,7 +78,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: sheet_walk_backarm_0
+      name: walk_a_0
       rect:
         serializedVersion: 2
         x: 0
@@ -91,7 +91,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: sheet_walk_backarm_1
+      name: walk_a_1
       rect:
         serializedVersion: 2
         x: 128
@@ -104,7 +104,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: sheet_walk_backarm_2
+      name: walk_a_2
       rect:
         serializedVersion: 2
         x: 256
@@ -117,7 +117,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: sheet_walk_backarm_3
+      name: walk_a_3
       rect:
         serializedVersion: 2
         x: 384
@@ -130,7 +130,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: sheet_walk_backarm_4
+      name: walk_a_4
       rect:
         serializedVersion: 2
         x: 512
@@ -143,7 +143,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: sheet_walk_backarm_5
+      name: walk_a_5
       rect:
         serializedVersion: 2
         x: 640
@@ -156,7 +156,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: sheet_walk_backarm_6
+      name: walk_a_6
       rect:
         serializedVersion: 2
         x: 768
@@ -169,7 +169,7 @@ TextureImporter:
       outline: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: sheet_walk_backarm_7
+      name: walk_a_7
       rect:
         serializedVersion: 2
         x: 896

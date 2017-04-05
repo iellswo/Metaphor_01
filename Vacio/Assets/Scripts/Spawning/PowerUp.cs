@@ -3,6 +3,9 @@ using System.Collections;
 
 public class PowerUp : SpawnableObject
 {
+    public Animator orbAnimator;
+    public string animationName = "powerup_hover";
+
     public enum EPowerUpType
     {
         AirWalk = 0,
@@ -27,5 +30,11 @@ public class PowerUp : SpawnableObject
                 }
             }
         }
+    }
+
+    void Start()
+    {
+        var startTime = Random.Range(0f, 1f);
+        orbAnimator.Play(animationName, layer: -1, normalizedTime: startTime);
     }
 }

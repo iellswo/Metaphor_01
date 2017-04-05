@@ -9,9 +9,10 @@ public class PlayerController : MonoBehaviour
     public Vector2 characterHalfSize = new Vector2(0.25f, .5f);
     public float maxSeekToGroundDistance = 0.33333f;
     public Animator spriteAnimator;
-    public string animationStateStanding = "Standing";
-    public string animationStateWalking = "Walking";
-    public string animationStateJumping = "Jumping";
+    public string animationStateStanding = "anim_idle";
+    public string animationStateWalking = "anim_walk";
+    public string animationStateJumping = "anim_jump";
+    public string animationStateFalling = "anim_fall";
     [Tooltip("List here all sprite renderers that you want to flip when the player reverses direction.")]
     public List<SpriteRenderer> BodySprites = new List<SpriteRenderer>();
     public float maxPowerUpBarChangeRate = 1.0f;
@@ -42,8 +43,8 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Player's max speed when falling (m/s)")]
     public float maxFallSpeed = 10.0f;
 
-    public float fallingAnimationStartVelocity = -1.0f;
-    public float fallingAnimationEndVelocity = 1.0f;
+    [Tooltip("The speed at which we play the fall animation.")]
+    public float fallAnimSpeed = .75f;
 
     [Header("Air Walk Powerup")]
     public Color airWalkPowerUpBarColor = Color.red;
@@ -123,8 +124,8 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 lastRespawnPoint = Vector2.zero;
     
-    private float fillMax = .755f;
-    private float fillMin = .515f;
+    private float fillMax = .696f;
+    private float fillMin = .507f;
 
     //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
@@ -521,8 +522,13 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            spriteAnimator.speed = 0.0f;
-            spriteAnimator.ForceStateNormalizedTime(Mathf.InverseLerp(fallingAnimationStartVelocity, fallingAnimationEndVelocity, currentVelocity.y));
+            // we are falling
+            spriteAnimator.speed = fallAnimSpeed;
+            if (! (spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateJumping) ||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling)))
+            {
+                spriteAnimator.CrossFade(animationStateFalling, 0.0f);
+            }
         }
 
         currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;

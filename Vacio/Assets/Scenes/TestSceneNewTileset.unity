@@ -139,6 +139,11 @@ Prefab:
       propertyPath: m_SortingLayerID
       value: 1940909999
       objectReference: {fileID: 0}
+    - target: {fileID: 23448342737946036, guid: 50710767ffb65b94b98f0b8b1603a2a7,
+        type: 2}
+      propertyPath: m_SortingLayerID
+      value: 1940909999
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 50710767ffb65b94b98f0b8b1603a2a7, type: 2}
   m_IsPrefabParent: 0
@@ -151,11 +156,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4233730128019402, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 2.84
+      value: 17.46
       objectReference: {fileID: 0}
     - target: {fileID: 4233730128019402, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -7.45
+      value: -6.65
       objectReference: {fileID: 0}
     - target: {fileID: 4233730128019402, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
       propertyPath: m_LocalPosition.z
@@ -180,6 +185,31 @@ Prefab:
     - target: {fileID: 4233730128019402, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
       propertyPath: m_RootOrder
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
+        type: 2}
+      propertyPath: animationStateJumping
+      value: anim_jump
+      objectReference: {fileID: 0}
+    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
+        type: 2}
+      propertyPath: jumpAnimSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
+        type: 2}
+      propertyPath: lowGravityPowerUpBarColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
+        type: 2}
+      propertyPath: lowGravityPowerUpBarColor.g
+      value: 0.27058825
+      objectReference: {fileID: 0}
+    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
+        type: 2}
+      propertyPath: lowGravityPowerUpBarColor.b
+      value: 0.48235297
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
@@ -277,6 +307,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1157550755 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1142900838138948, guid: bb5ebd6050374fb45aa6f8188e79873e,
+    type: 2}
+  m_PrefabInternal: {fileID: 592727577}
+--- !u!212 &1157550757 stripped
+SpriteRenderer:
+  m_PrefabParentObject: {fileID: 212549049793694672, guid: bb5ebd6050374fb45aa6f8188e79873e,
+    type: 2}
+  m_PrefabInternal: {fileID: 592727577}
+--- !u!114 &1157550758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1157550755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7c73cbcfeb8f734c8a5df8b1f5501c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  renderer: {fileID: 1157550757}
 --- !u!1001 &1170746530
 Prefab:
   m_ObjectHideFlags: 0
