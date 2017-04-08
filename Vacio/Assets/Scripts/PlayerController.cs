@@ -9,9 +9,10 @@ public class PlayerController : MonoBehaviour
     public Vector2 characterHalfSize = new Vector2(0.25f, .5f);
     public float maxSeekToGroundDistance = 0.33333f;
     public Animator spriteAnimator;
-    public string animationStateStanding = "Standing";
-    public string animationStateWalking = "Walking";
-    public string animationStateJumping = "Jumping";
+    public string animationStateStanding = "anim_idle";
+    public string animationStateWalking = "anim_walk";
+    public string animationStateJumping = "anim_jump";
+    public string animationStateFalling = "anim_fall";
     [Tooltip("List here all sprite renderers that you want to flip when the player reverses direction.")]
     public List<SpriteRenderer> BodySprites = new List<SpriteRenderer>();
     public float maxPowerUpBarChangeRate = 1.0f;
@@ -42,8 +43,8 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Player's max speed when falling (m/s)")]
     public float maxFallSpeed = 10.0f;
 
-    public float fallingAnimationStartVelocity = -1.0f;
-    public float fallingAnimationEndVelocity = 1.0f;
+    [Tooltip("The speed at which we play the fall animation.")]
+    public float fallAnimSpeed = .75f;
 
     [Header("Air Walk Powerup")]
     public Color airWalkPowerUpBarColor = Color.red;
@@ -122,6 +123,9 @@ public class PlayerController : MonoBehaviour
     public Vector2 currentVelocity = Vector2.zero;
 
     private Vector2 lastRespawnPoint = Vector2.zero;
+    
+    private float fillMax = .696f;
+    private float fillMin = .507f;
 
     //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
@@ -425,34 +429,36 @@ public class PlayerController : MonoBehaviour
         }
 
         // Powerup bar
-        Vector3 scale = powerUpBar.transform.localScale;
+        // Vector3 scale = powerUpBar.transform.localScale;
         if (currentAirWalkPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = airWalkPowerUpBarColor;
             float targetScale = currentAirWalkPowerUpMeter / currentPowerupMeterMaxValue;
-            scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            //scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            AdjustFill(targetScale);
         }
         else if (currentLowGravityPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = lowGravityPowerUpBarColor;
             float targetScale = currentLowGravityPowerUpMeter / currentPowerupMeterMaxValue;
-            scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            //scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            AdjustFill(targetScale);
         }
         else if (currentFlyingPowerUpMeter > 0.0f)
         {
             powerUpBar.gameObject.SetActive(true);
             powerUpBarGraphic.color = flyingPowerUpBarColor;
             float targetScale = currentFlyingPowerUpMeter / currentPowerupMeterMaxValue;
-            scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            //scale.x = Mathf.MoveTowards(scale.x, targetScale, maxPowerUpBarChangeRate * Time.deltaTime);
+            AdjustFill(targetScale);
         }
         else
         {
-            scale.x = 0.0f;
             powerUpBar.gameObject.SetActive(false);
         }
-        powerUpBar.transform.localScale = scale;
+        //powerUpBar.transform.localScale = scale;
 
         // Cameras
         //CameraZone cameraZone = null;
@@ -516,8 +522,13 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            spriteAnimator.speed = 0.0f;
-            spriteAnimator.ForceStateNormalizedTime(Mathf.InverseLerp(fallingAnimationStartVelocity, fallingAnimationEndVelocity, currentVelocity.y));
+            // we are falling
+            spriteAnimator.speed = fallAnimSpeed;
+            if (! (spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateJumping) ||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling)))
+            {
+                spriteAnimator.CrossFade(animationStateFalling, 0.0f);
+            }
         }
 
         currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
@@ -567,5 +578,17 @@ public class PlayerController : MonoBehaviour
                 break;
         }
         spriteAnimator.CrossFade(animatorState, 0.0f);
+    }
+
+    private void AdjustFill(float percent)
+    {
+        float fillAmount = fillMin + (percent * (fillMax - fillMin));
+
+        Renderer rend = powerUpBarGraphic.GetComponent<Renderer>();
+        float curFill = rend.material.GetFloat("_Fill");
+
+        float destFill = Mathf.MoveTowards(curFill, fillAmount, maxPowerUpBarChangeRate * Time.deltaTime);
+
+        rend.material.SetFloat("_Fill", destFill);
     }
 }

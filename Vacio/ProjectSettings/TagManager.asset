@@ -44,9 +44,12 @@ TagManager:
   - name: Background
     uniqueID: 1148713855
     locked: 0
+  - name: Particles
+    uniqueID: 4215706961
+    locked: 0
   - name: Character
     uniqueID: 4281738673
     locked: 0
-  - name: Particles
-    uniqueID: 4215706961
+  - name: Foreground
+    uniqueID: 1940909999
     locked: 0
