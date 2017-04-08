@@ -84,9 +84,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   priority: 0
-  top: 200
-  bottom: 3.14
-  left: -800.92
-  right: -1.3
+  top: 0
+  bottom: -20
+  left: 0
+  right: 100
   screenHeight: 8.5
   screenHeightAdjustSpeed: 1

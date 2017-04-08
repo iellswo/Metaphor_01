@@ -21,12 +21,17 @@ public class CameraController : MonoBehaviour
     [Tooltip("How far ahead of the player we want our focus point.")]
     public float PlayerLeaderX = 0f;
 
+    [Tooltip("How far we offset the y of the player if we want them lower on the screen")]
+    public float PlayerOffsetY = 0f;
+
     [Tooltip("How fast the player needs to move before we start leading the player.")]
     public float PlayerLeaderXMinSpeed = 0.5f;
 
     public float PlayerWindowYFromEdge = 1.5f;
 
     private float _lastSafeY = 0f;
+
+    private float _lastTargetX = 0f;
 
     // Use this for initialization
     void Start()
@@ -35,6 +40,8 @@ public class CameraController : MonoBehaviour
 
         // Set camera position to calculated location.
         Camera.main.transform.position = playerPosition;
+
+        _lastTargetX = playerPosition.x;
     }
 
     // LateUpdate is called after Update each frame
@@ -53,10 +60,16 @@ public class CameraController : MonoBehaviour
         if (Player.currentVelocity.x > PlayerLeaderXMinSpeed)
         {
             playerPosition.x += PlayerLeaderX;
+            _lastTargetX = playerPosition.x;
         }
         else if (Player.currentVelocity.x < -1 * PlayerLeaderXMinSpeed)
         {
             playerPosition.x -= PlayerLeaderX;
+            _lastTargetX = playerPosition.x;
+        }
+        else
+        {
+            playerPosition.x = _lastTargetX;
         }
 
         cameraPosition.x = Lerp(cameraPosition.x, playerPosition.x, LerpSpeedX);
@@ -64,7 +77,7 @@ public class CameraController : MonoBehaviour
         // Handle y movement
         if (Player.currentMovementState == PlayerController.ECurrentMovementState.Grounded)
         {
-            _lastSafeY = playerPosition.y;
+            _lastSafeY = playerPosition.y + PlayerOffsetY;
 
             cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
         }
@@ -84,6 +97,10 @@ public class CameraController : MonoBehaviour
                 }
 
                 cameraPosition.y = desiredCameraY;
+            }
+            else
+            {
+                cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
             }
         }
 

@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: cfb417c8b96fa1e4097b6b7507c1ba53
+timeCreated: 1491528785
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Homemade Apple
+  fontNames:
+  - Homemade Apple
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
