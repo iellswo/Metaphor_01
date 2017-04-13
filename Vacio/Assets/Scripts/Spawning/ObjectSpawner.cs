@@ -58,10 +58,10 @@ public class ObjectSpawner : MonoBehaviour
         if (respawnOnDeath && deathMarked)
         {
             deathMarked = false;
-            if (CanRespawn())
-            {
+            //if (CanRespawn())
+            //{
                 Spawn();
-            }
+            //}
         }
     }
 

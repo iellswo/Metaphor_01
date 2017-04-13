@@ -112,6 +112,12 @@ public class CameraController : MonoBehaviour
         Camera.main.transform.position = cameraPosition;
     }
 
+    // This only works if the player is moved to respawn location BEFORE this is called.
+    public void TriggerDeath()
+    {
+        _lastTargetX = Player.transform.position.x;
+    }
+
     private float Lerp(float a, float b, float speed)
     {
         return a + (Time.deltaTime * speed * (b - a));

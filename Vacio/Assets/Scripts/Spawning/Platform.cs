@@ -6,13 +6,18 @@ public class Platform : SpawnableObject
 {
     public float TimeUntilFall = 2f;
     public Animator PlatformAnimator;
+    public ParticleCoordinationDirector Particles;
+
+    public string PlatformStableAnim = "platform_stationary";
+    public string PlatformShakingAnim = "platform_shaking";
+    public string PlatformVanishAnim = "platform_vanish";
 
     private float _timeSinceLanding = 0f;
     private bool _landedOn = false;
     private float _timeSinceFalling = 0f;
     private bool _falling = false;
 
-    private float _timeOfFall = 1.036f;
+    private float _timeOfFall = 1f;
 
     // Use this for initialization
     void Start()
@@ -20,7 +25,7 @@ public class Platform : SpawnableObject
         if (PlatformAnimator != null)
         {
             // TODO: Change this name when we make final plaform sprite and animations.
-            PlatformAnimator.Play("anim_temp_platform");
+            PlatformAnimator.Play(PlatformStableAnim);
         }
     }
 
@@ -32,8 +37,12 @@ public class Platform : SpawnableObject
             _timeSinceLanding += Time.deltaTime;
             if (_timeSinceLanding >= TimeUntilFall)
             {
-                // TODO: Change this name when we make final plaform sprite and animations.
-                PlatformAnimator.Play("anim_temp_fall");
+                PlatformAnimator.Play(PlatformVanishAnim);
+                if (Particles != null)
+                {
+                    Particles.PlayParticles();
+                }
+
                 _falling = true;
                 _landedOn = false;
             }
@@ -50,8 +59,7 @@ public class Platform : SpawnableObject
 
     public void ReportLandedOn()
     {
-        // TODO: Change this name when we make final plaform sprite and animations.
-        PlatformAnimator.Play("anim_temp_shake");
+        PlatformAnimator.Play(PlatformShakingAnim);
         _landedOn = true;
     }
 
@@ -61,9 +69,8 @@ public class Platform : SpawnableObject
         _landedOn = false;
         _timeSinceFalling = 0f;
         _falling = false;
-
-        // TODO: Change this name when we make final plaform sprite and animations.
-        PlatformAnimator.Play("anim_temp_platform");
+        
+        PlatformAnimator.Play(PlatformStableAnim);
 
     }
 }
