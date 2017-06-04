@@ -127,7 +127,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1529239735800422}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 17.46, y: -6.65, z: -1}
+  m_LocalPosition: {x: 29.7, y: -22.68, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4141166689298180}
@@ -198,6 +198,8 @@ MonoBehaviour:
   animationStateWalking: anim_walk
   animationStateJumping: anim_jump
   animationStateFalling: anim_fall
+  animationStateFloating: anim_float_idle
+  animationStateFloatyWalk: anim_float_walk
   BodySprites:
   - {fileID: 212057238543952872}
   - {fileID: 212549049793694672}
@@ -206,14 +208,14 @@ MonoBehaviour:
   groundForwardAcceleration: 3
   groundReverseAcceleration: 10
   groundRunningFriction: 100
-  groundMaxSpeed: 2
+  groundMaxSpeed: 2.5
   walkingAnimationVelocity: 0.75
   airForwardAcceleration: 0
   airReverseAcceleration: 1
   airRunningFriction: 0
   airMaxSpeed: 5
-  jumpRisingVelocity: 10
-  forwardJumpVelocityBoost: 3
+  jumpRisingVelocity: 12
+  forwardJumpVelocityBoost: 1
   gravity: 30
   maxFallSpeed: 10
   fallAnimSpeed: 0.75
@@ -229,7 +231,8 @@ MonoBehaviour:
   lowGravityAirControl: 1
   lowGravityGroundForwardAcceleration: 2
   lowGravityGroundReverseAcceleration: 4
-  lowGravityGroundRunningFriction: 3
+  lowGravityGroundRunningFriction: 1.77
+  floatyWalkingAnimationVelocity: 0.25
   flyingPowerUpBarColor: {r: 0.9333334, g: 0.9215687, b: 0.5647059, a: 1}
   flyingMaxDuration: 20
   flyingRisingAcceleration: 15
@@ -255,7 +258,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7c73cbcfeb8f734c8a5df8b1f5501c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  renderer: {fileID: 212549049793694672}
+  sRenderer: {fileID: 212549049793694672}
 --- !u!198 &198411479132962934
 ParticleSystem:
   m_ObjectHideFlags: 1

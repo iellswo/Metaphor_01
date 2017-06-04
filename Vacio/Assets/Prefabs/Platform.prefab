@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4813661937670834}
   - component: {fileID: 114641086381938564}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Particle Organizer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -36,7 +36,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4441136937924358}
   - component: {fileID: 212092102417554736}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: platform_sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -53,7 +53,7 @@ GameObject:
   - component: {fileID: 4888495279732000}
   - component: {fileID: 199793494209710994}
   - component: {fileID: 198769441977514480}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Grass
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 95457687223270194}
   - component: {fileID: 61937644976538250}
   - component: {fileID: 114964857414792018}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,7 +88,7 @@ GameObject:
   - component: {fileID: 4086239732714142}
   - component: {fileID: 198530933367492422}
   - component: {fileID: 199413330780722858}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Dirt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: 4136839415137202}
   - component: {fileID: 199957290508267092}
   - component: {fileID: 198723591724452402}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mushrooms
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -208,7 +208,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Size: {x: 4, y: 0.3}
+  m_Size: {x: 4, y: 0.5}
 --- !u!95 &95457687223270194
 Animator:
   serializedVersion: 3
@@ -5638,7 +5638,7 @@ ParticleSystem:
         m_Mode: 0
         m_NumColorKeys: 2
         m_NumAlphaKeys: 2
-      minColor: {r: 0.41960785, g: 1, b: 0.7411765, a: 1}
+      minColor: {r: 0.19215687, g: 0.5882353, b: 0.3529412, a: 1}
       maxColor: {r: 0.19215687, g: 0.38039216, b: 0.25882354, a: 1}
       minMaxState: 2
     startSize:

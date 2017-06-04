@@ -13,9 +13,14 @@ public class PlayerController : MonoBehaviour
     public string animationStateWalking = "anim_walk";
     public string animationStateJumping = "anim_jump";
     public string animationStateFalling = "anim_fall";
+    public string animationStateFloating = "anim_float_idle";
+    public string animationStateFloatyWalk = "anim_float_walk";
+    
     [Tooltip("List here all sprite renderers that you want to flip when the player reverses direction.")]
     public List<SpriteRenderer> BodySprites = new List<SpriteRenderer>();
     public float maxPowerUpBarChangeRate = 1.0f;
+    [Tooltip("Maximum value of a powerup, used for fill.")]
+    public float maxPowerUpValue = 15f;
 
     [Header("Ground Movement Data")]
     [Tooltip("How quickly the player accelerates from standing to running on the ground (m/s/s).")]
@@ -64,6 +69,8 @@ public class PlayerController : MonoBehaviour
     public float lowGravityGroundForwardAcceleration = 0.5f;
     public float lowGravityGroundReverseAcceleration = 1.0f;
     public float lowGravityGroundRunningFriction = 0.1f;
+    [Tooltip("How fast the player animates 'floaty' walking.")]
+    public float floatyWalkingAnimationVelocity = .5f;
 
     [Header("Flight Powerup")]
     public Color flyingPowerUpBarColor = Color.white;
@@ -85,18 +92,22 @@ public class PlayerController : MonoBehaviour
 
     private struct SInput
     {
-        public bool right, left, down, jumpDown, jumpHeld, resetDown;
+        public bool down, up, jumpDown, jumpHeld, resetDown, interactDown;
+        public float left, right;
         public static SInput GetCurrentInput()
         {
             SInput ret = new SInput();
             float horizontal = Input.GetAxis("Horizontal");
             float vertical = Input.GetAxis("Vertical");
-            ret.left = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A) || horizontal < 0.0f;
-            ret.right = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D) || horizontal > 0.0f;
-            ret.down = Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || vertical < 0.0f;
-            ret.jumpDown = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) || Input.GetButtonDown("Fire1");
-            ret.jumpHeld = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1");
-            ret.resetDown = Input.GetKeyDown(KeyCode.R) || Input.GetButtonDown("Start");
+            ret.left = horizontal;
+            ret.right = horizontal;
+            ret.down =  vertical < 0.0f;
+            ret.up = vertical > 0.0f;
+            ret.jumpDown = Input.GetButtonDown("Jump");
+            ret.jumpHeld = Input.GetButton("Jump");
+            ret.interactDown = Input.GetButtonDown("Interact");
+            // TODO: remove reset eventually.
+            ret.resetDown = Input.GetKeyDown(KeyCode.R);
             return ret;
         }
     }
@@ -142,20 +153,132 @@ public class PlayerController : MonoBehaviour
         timeInCurrentState += Time.deltaTime;
 
         SInput currentInput = SInput.GetCurrentInput();
+
+        float horizInput = currentInput.left + currentInput.right;
+        bool isUsingAirWalk = false;
+        bool canJump;
+        bool isOnGround;
+
+        // read input and handle the movement of the character.
+        HandleMovemet(currentInput, out canJump, out isOnGround);
+
+        // State changes.
+        if (currentMovementState != ECurrentMovementState.Dead)
+        {
+            // TODO Use nonalloc
+            //currentCameraZones.Clear();
+            Collider2D[] colliders = Physics2D.OverlapBoxAll(transform.position, characterHalfSize, 0.0f, 4); // 4 is IgnoreRaycast for triggers.
+            foreach (Collider2D col in colliders)
+            {
+                if (col.GetComponent<KillPlayerZone>())
+                {
+                    // Report that we have died.
+                    SetCurrentState(ECurrentMovementState.Dead);
+                    canJump = false;
+                    break;
+                }
+                //else if (col.GetComponent<CameraZone>())
+                //{
+                //    currentCameraZones.Add(col.GetComponent<CameraZone>());
+                //}
+                else if (col.GetComponent<PlayerCheckpoint>() && lastRespawnPoint != (Vector2)col.transform.position)
+                {
+                    // Check if we're resetting the respawn point.
+                    lastRespawnPoint = col.transform.position;
+                    Debug.Log("Set respawn point to " + lastRespawnPoint + ". TODO: Particle effect for checkpoints?");
+                }
+                else if (col.GetComponent<PowerUp>())
+                {
+                    CheckGetPowerUp(col.GetComponent<PowerUp>(), currentInput);
+                }
+                else if (col.GetComponent<SceneTransitionManager>())
+                {
+                    col.GetComponent<SceneTransitionManager>().TriggerLoadScene();
+                }
+            }
+        }
+        // This bracket is reached if the player is dead or reset is pressed.  Respawn all objects and player.
+        else
+        {
+            transform.position = lastRespawnPoint;
+            currentVelocity = Vector2.zero;
+            SetCurrentState(ECurrentMovementState.Airborne);
+            spriteAnimator.CrossFade(animationStateJumping, 0.0f);
+
+            SpawnTracker.TriggerReset();
+        }
+
+        if (canJump && currentInput.jumpDown)
+        {
+            float jumpVelocity = currentLowGravityPowerUpMeter <= 0.0f ? jumpRisingVelocity : lowGravityJumpRisingVelocity;
+            // Jump action.
+            SetCurrentState(ECurrentMovementState.Airborne);
+            currentVelocity.y = jumpVelocity;
+            currentVelocity.x += horizInput * forwardJumpVelocityBoost;
+            if (wasUsingAirWalkLastFrame)
+            {
+                currentAirWalkPowerUpMeter -= airWalkJumpLoss;
+            }
+        }
+        else if (isOnGround && currentMovementState == ECurrentMovementState.Airborne)
+        {
+            // Land on ground.
+            SetCurrentState(ECurrentMovementState.Grounded);
+        }
+        else if (currentMovementState == ECurrentMovementState.Airborne && currentVelocity.y <= 0.0f && currentAirWalkPowerUpMeter > 0.0f)
+        {
+            // Air walk after jump.
+            SetCurrentState(ECurrentMovementState.Grounded);
+            isUsingAirWalk = true;
+        }
+        else if (!isOnGround && currentMovementState == ECurrentMovementState.Grounded)
+        {
+            // Fall off cliffs.
+            if (currentAirWalkPowerUpMeter <= 0.0f)
+            {
+                SetCurrentState(ECurrentMovementState.Airborne);
+            }
+            else
+            {
+                isUsingAirWalk = true;
+            }
+        }
+
+        wasUsingAirWalkLastFrame = isUsingAirWalk;
+        if (isUsingAirWalk)
+        {
+            currentAirWalkPowerUpMeter -= Time.deltaTime * Mathf.Abs(currentVelocity.x / groundMaxSpeed);
+            airWalkEmitter.Emit(1);
+        }
+        if (isUsingFlightPowerup)
+        {
+            currentFlyingPowerUpMeter -= Time.deltaTime * currentVelocity.magnitude;
+            if (currentFlyingPowerUpMeter <= 0.0f)
+            {
+                isUsingFlightPowerup = false;
+            }
+        }
+
+        // Powerup bar
+        ControlPowerupFill();
+
+        // Animator
+        ControlAnimator(isOnGround, isUsingAirWalk, Mathf.Abs(horizInput));
+
+        currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
+        currentLowGravityPowerUpMeter -= lowGravityDistanceLossRate * Mathf.Abs(currentVelocity.x) * Time.deltaTime;
+
+        transform.position = new Vector3(transform.position.x, transform.position.y, -1);
+    }
+
+    private void HandleMovemet(SInput currentInput, out bool canJump, out bool isOnGround)
+    {
         if (currentInput.resetDown)
         {
             SetCurrentState(ECurrentMovementState.Dead);
         }
 
-        float horizInput = 0.0f;
-        if (currentInput.left)
-        {
-            horizInput -= 1.0f;
-        }
-        if (currentInput.right)
-        {
-            horizInput += 1.0f;
-        }
+        float horizInput = currentInput.left + currentInput.right;
 
         float sameDirectionCheckValue = currentVelocity.x * horizInput;
         float forwardAcceleration, skidAcceleration, frictionAcceleration;
@@ -196,7 +319,7 @@ public class PlayerController : MonoBehaviour
             currentVelocity.x += horizInput * skidAcceleration * Time.deltaTime;
         }
 
-        float maxSpeed = groundMaxSpeed;
+        float maxSpeed = groundMaxSpeed * Mathf.Abs(horizInput);
         if (currentMovementState == ECurrentMovementState.Airborne)
         {
             maxSpeed = airMaxSpeed;
@@ -219,8 +342,8 @@ public class PlayerController : MonoBehaviour
         int playerWorldCollisionMask = ~4 & ~(1 << 8); // include All, exclude IgnoreRaycast
         int playerFloorCollisionMask = (1 << 8) | ~4;
         Vector3 currentPosition = transform.position;
-        bool canJump = false;
-        bool isOnGround = true;
+        canJump = false;
+        isOnGround = true;
         switch (currentMovementState)
         {
             case ECurrentMovementState.Grounded:
@@ -332,102 +455,131 @@ public class PlayerController : MonoBehaviour
             default:
                 break;
         }
+    }
 
-        bool isUsingAirWalk = false;
-
-        // State changes.
-        if (currentMovementState != ECurrentMovementState.Dead)
+    /// <summary>
+    /// Picks up the powerup and applies its effect.
+    /// </summary>
+    /// <param name="powerUp">The powerup being picked up.</param>
+    private void CheckGetPowerUp(PowerUp powerUp, SInput currentInput)
+    {
+        // Pick up the powerup on the frame the player presses the interact button.
+        if (currentInput.interactDown)
         {
-            // TODO Use nonalloc
-            //currentCameraZones.Clear();
-            Collider2D[] colliders = Physics2D.OverlapBoxAll(transform.position, characterHalfSize, 0.0f, 4); // 4 is IgnoreRaycast for triggers.
-            foreach (Collider2D col in colliders)
+            float? overrideDuration = powerUp.overrideDuration;
+            switch (powerUp.powerUpType)
             {
-                if (col.GetComponent<KillPlayerZone>())
-                {
-                    // Check if we've died.
-                    SetCurrentState(ECurrentMovementState.Dead);
-                    canJump = false;
+                case PowerUp.EPowerUpType.AirWalk:
+                    currentAirWalkPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : maxAirWalkDistance;
+                    currentPowerupMeterMaxValue = maxPowerUpValue;
                     break;
-                }
-                //else if (col.GetComponent<CameraZone>())
-                //{
-                //    currentCameraZones.Add(col.GetComponent<CameraZone>());
-                //}
-                else if (col.GetComponent<PlayerCheckpoint>() && lastRespawnPoint != (Vector2)col.transform.position)
-                {
-                    // Check if we're resetting the respawn point.
-                    lastRespawnPoint = col.transform.position;
-                    Debug.Log("Set respawn point to " + lastRespawnPoint + ". TODO: Particle effect for checkpoints?");
-                }
-                else if (col.GetComponent<PowerUp>())
-                {
-                    GetPowerUp(col.GetComponent<PowerUp>());
-                }
+                case PowerUp.EPowerUpType.LowGravity:
+                    currentLowGravityPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : maxLowGravityTime;
+                    currentPowerupMeterMaxValue = maxPowerUpValue;
+                    break;
+                case PowerUp.EPowerUpType.Flying:
+                    currentFlyingPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : flyingMaxDuration;
+                    currentPowerupMeterMaxValue = maxPowerUpValue;
+                    break;
+                default:
+                    Debug.Log("Powerup type not implemented.");
+                    break;
+            }
+            powerUp.DeSpawn();
+        }
+        // TODO: Show prompt if the player is not pressing the interact button.
+    }
+
+    /// <summary>
+    /// Sets the current state and handles transitional animations.
+    /// </summary>
+    /// <param name="state"></param>
+    private void SetCurrentState(ECurrentMovementState state)
+    {
+        currentMovementState = state;
+        timeInCurrentState = 0.0f;
+        string animatorState = animationStateWalking;
+        switch (state)
+        {
+            case ECurrentMovementState.Grounded:
+                animatorState = animationStateWalking;
+                break;
+            case ECurrentMovementState.Airborne:
+                animatorState = animationStateJumping;
+                break;
+            case ECurrentMovementState.Dead:
+                break;
+        }
+        spriteAnimator.CrossFade(animatorState, 0.0f);
+    }
+
+    /// <summary>
+    /// Handles the animator code, making sure the animator is playing the proper animation.
+    /// </summary>
+    /// <param name="isOnGround">Is the player on the ground.</param>
+    /// <param name="isUsingAirWalk">Is the player using Air Walk.</param>
+    private void ControlAnimator(bool isOnGround, bool isUsingAirWalk, float inputPercentage = 1f)
+    {
+        // Animator facing
+        string animToPlay;
+        float velocity = currentVelocity.x;
+
+        if (currentVelocity.x > 0.0f)
+        {
+            foreach (SpriteRenderer s in BodySprites)
+            {
+                s.flipX = false;
             }
         }
-        // This bracket is reached if the player is dead or reset is pressed.  Respawn all objects and player.
-        else
+        else if (currentVelocity.x < 0.0f)
         {
-            transform.position = lastRespawnPoint;
-            currentVelocity = Vector2.zero;
-            SetCurrentState(ECurrentMovementState.Airborne);
-            spriteAnimator.CrossFade(animationStateJumping, 0.0f);
-
-            SpawnTracker.TriggerReset();
-        }
-
-        if (canJump && currentInput.jumpDown)
-        {
-            float jumpVelocity = currentLowGravityPowerUpMeter <= 0.0f ? jumpRisingVelocity : lowGravityJumpRisingVelocity;
-            // Jump action.
-            SetCurrentState(ECurrentMovementState.Airborne);
-            currentVelocity.y = jumpVelocity;
-            currentVelocity.x += horizInput * forwardJumpVelocityBoost;
-            if (wasUsingAirWalkLastFrame)
+            foreach (SpriteRenderer s in BodySprites)
             {
-                currentAirWalkPowerUpMeter -= airWalkJumpLoss;
+                s.flipX = true;
             }
         }
-        else if (isOnGround && currentMovementState == ECurrentMovementState.Airborne)
+        velocity = Mathf.Abs(velocity);
+        if (isOnGround || isUsingAirWalk)
         {
-            // Land on ground.
-            SetCurrentState(ECurrentMovementState.Grounded);
-        }
-        else if (currentMovementState == ECurrentMovementState.Airborne && currentVelocity.y <= 0.0f && currentAirWalkPowerUpMeter > 0.0f)
-        {
-            // Air walk after jump.
-            SetCurrentState(ECurrentMovementState.Grounded);
-            isUsingAirWalk = true;
-        }
-        else if (!isOnGround && currentMovementState == ECurrentMovementState.Grounded)
-        {
-            // Fall off cliffs.
-            if (currentAirWalkPowerUpMeter <= 0.0f)
+            if (velocity <= 0.05f)
             {
-                SetCurrentState(ECurrentMovementState.Airborne);
+                spriteAnimator.speed = 1.0f;
+
+                animToPlay = currentLowGravityPowerUpMeter > 0f ? animationStateFloating : animationStateStanding;
+
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
+                {
+                    spriteAnimator.CrossFade(animToPlay, 0.0f);
+                }
             }
             else
             {
-                isUsingAirWalk = true;
+                animToPlay = currentLowGravityPowerUpMeter > 0f ? animationStateFloatyWalk : animationStateWalking;
+
+                spriteAnimator.speed = inputPercentage * (currentLowGravityPowerUpMeter > 0f ? floatyWalkingAnimationVelocity : walkingAnimationVelocity);
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
+                {
+                    spriteAnimator.CrossFade(animToPlay, 0.0f);
+                }
             }
         }
-
-        wasUsingAirWalkLastFrame = isUsingAirWalk;
-        if (isUsingAirWalk)
+        else
         {
-            currentAirWalkPowerUpMeter -= Time.deltaTime * Mathf.Abs(currentVelocity.x / groundMaxSpeed);
-            airWalkEmitter.Emit(1);
-        }
-        if (isUsingFlightPowerup)
-        {
-            currentFlyingPowerUpMeter -= Time.deltaTime * currentVelocity.magnitude;
-            if (currentFlyingPowerUpMeter <= 0.0f)
+            // we are falling
+            spriteAnimator.speed = fallAnimSpeed;
+            if (!(spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateJumping) ||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling)))
             {
-                isUsingFlightPowerup = false;
+                spriteAnimator.CrossFade(animationStateFalling, 0.0f);
             }
         }
+    }
 
+    /// <summary>
+    /// Checks how much of the powerup we have left and fills the sprite.
+    /// </summary>
+    private void ControlPowerupFill()
+    {
         // Powerup bar
         // Vector3 scale = powerUpBar.transform.localScale;
         if (currentAirWalkPowerUpMeter > 0.0f)
@@ -458,128 +610,12 @@ public class PlayerController : MonoBehaviour
         {
             powerUpBar.gameObject.SetActive(false);
         }
-        //powerUpBar.transform.localScale = scale;
-
-        // Cameras
-        //CameraZone cameraZone = null;
-        // TODO Camera smoothing.
-        //foreach (CameraZone camera in currentCameraZones)
-        //{
-        //    if (cameraZone == null || camera.priority > cameraZone.priority)
-        //    {
-        //        cameraZone = camera;
-        //    }
-        //}
-        //if (cameraZone != null)
-        //{
-        //    Camera.main.orthographicSize = Mathf.MoveTowards(Camera.main.orthographicSize, cameraZone.screenHeight / 2.0f, Time.deltaTime * cameraZone.screenHeightAdjustSpeed);
-        //    Vector2 cameraSize = new Vector2(Camera.main.orthographicSize * Camera.main.aspect, Camera.main.orthographicSize);
-        //    Vector3 cameraPosition = transform.position + Vector3.back * 10.0f;
-        //    cameraPosition.x = Mathf.Clamp(cameraPosition.x, cameraZone.left + cameraSize.x, cameraZone.right - cameraSize.x);
-        //    cameraPosition.y = Mathf.Clamp(cameraPosition.y, cameraZone.bottom + cameraSize.y, cameraZone.top - cameraSize.y);
-        //    Camera.main.transform.position = cameraPosition;
-        //}
-        //else
-        //{
-        //    Camera.main.transform.position = transform.position + Vector3.back * 10.0f;
-        //}
-
-        // Animator facing
-        float velocity = currentVelocity.x;
-        if (currentVelocity.x > 0.0f)
-        {
-            foreach (SpriteRenderer s in BodySprites)
-            {
-                s.flipX = false;
-            }
-        }
-        else if (currentVelocity.x < 0.0f)
-        {
-            foreach (SpriteRenderer s in BodySprites)
-            {
-                s.flipX = true;
-            }
-        }
-        velocity = Mathf.Abs(velocity);
-        if (isOnGround || isUsingAirWalk)
-        {
-            if (velocity <= 0.05f)
-            {
-                spriteAnimator.speed = 1.0f;
-                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateStanding))
-                {
-                    spriteAnimator.CrossFade(animationStateStanding, 0.0f);
-                }
-            }
-            else
-            {
-                spriteAnimator.speed = velocity * walkingAnimationVelocity;
-                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateWalking))
-                {
-                    spriteAnimator.CrossFade(animationStateWalking, 0.0f);
-                }
-            }
-        }
-        else
-        {
-            // we are falling
-            spriteAnimator.speed = fallAnimSpeed;
-            if (! (spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateJumping) ||
-                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling)))
-            {
-                spriteAnimator.CrossFade(animationStateFalling, 0.0f);
-            }
-        }
-
-        currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
-        currentLowGravityPowerUpMeter -= lowGravityDistanceLossRate * Mathf.Abs(currentVelocity.x) * Time.deltaTime;
-
-        transform.position = new Vector3(transform.position.x, transform.position.y, -1);
     }
-
-    public void GetPowerUp(PowerUp powerUp)
-    {
-        float? overrideDuration = powerUp.overrideDuration;
-        switch (powerUp.powerUpType)
-        {
-            case PowerUp.EPowerUpType.AirWalk:
-                currentAirWalkPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : maxAirWalkDistance;
-                currentPowerupMeterMaxValue = currentAirWalkPowerUpMeter;
-                break;
-            case PowerUp.EPowerUpType.LowGravity:
-                currentLowGravityPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : maxLowGravityTime;
-                currentPowerupMeterMaxValue = currentLowGravityPowerUpMeter;
-                break;
-            case PowerUp.EPowerUpType.Flying:
-                currentFlyingPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : flyingMaxDuration;
-                currentPowerupMeterMaxValue = currentFlyingPowerUpMeter;
-                break;
-            default:
-                Debug.Log("Powerup type not implemented.");
-                break;
-        }
-        powerUp.DeSpawn();
-    }
-
-    private void SetCurrentState(ECurrentMovementState state)
-    {
-        currentMovementState = state;
-        timeInCurrentState = 0.0f;
-        string animatorState = animationStateWalking;
-        switch (state)
-        {
-            case ECurrentMovementState.Grounded:
-                animatorState = animationStateWalking;
-                break;
-            case ECurrentMovementState.Airborne:
-                animatorState = animationStateJumping;
-                break;
-            case ECurrentMovementState.Dead:
-                break;
-        }
-        spriteAnimator.CrossFade(animatorState, 0.0f);
-    }
-
+    
+    /// <summary>
+    /// Helper function that directly manipulates the sprite shader to show the fill effect.
+    /// </summary>
+    /// <param name="percent">Percentage we should fill.</param>
     private void AdjustFill(float percent)
     {
         float fillAmount = fillMin + (percent * (fillMax - fillMin));

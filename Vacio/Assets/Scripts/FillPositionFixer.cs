@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class FillPositionFixer : MonoBehaviour
 {
-    public SpriteRenderer renderer;
+    public SpriteRenderer sRenderer;
 
     private float lastSavedX = 0f;
 	
 	// Late Update is called after update each frame
 	void LateUpdate ()
     {
-        if (renderer.flipX && gameObject.transform.localPosition.x != lastSavedX * -1)
+        if (sRenderer.flipX && gameObject.transform.localPosition.x != lastSavedX * -1)
         {
             var pos = gameObject.transform.localPosition;
             lastSavedX = pos.x;
