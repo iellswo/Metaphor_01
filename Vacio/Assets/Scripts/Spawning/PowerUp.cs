@@ -5,6 +5,7 @@ public class PowerUp : SpawnableObject
 {
     public Animator orbAnimator;
     public string animationName = "powerup_hover";
+    public GameObject proxyPrefab;
 
     public enum EPowerUpType
     {

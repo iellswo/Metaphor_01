@@ -11,6 +11,21 @@ Prefab:
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 1529239735800422}
   m_IsPrefabParent: 1
+--- !u!1 &1095036010064934
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4758587780383208}
+  m_Layer: 0
+  m_Name: Hand Bone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1142900838138948
 GameObject:
   m_ObjectHideFlags: 0
@@ -127,13 +142,14 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1529239735800422}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 29.7, y: -22.68, z: -1}
+  m_LocalPosition: {x: 2.39, y: -25.85, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4141166689298180}
   - {fileID: 4170557457781768}
   - {fileID: 4747560328604538}
   - {fileID: 4947037184719268}
+  - {fileID: 4758587780383208}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -149,6 +165,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4233730128019402}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4758587780383208
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1095036010064934}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4233730128019402}
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4947037184719268
 Transform:
@@ -200,15 +229,19 @@ MonoBehaviour:
   animationStateFalling: anim_fall
   animationStateFloating: anim_float_idle
   animationStateFloatyWalk: anim_float_walk
+  animationStatePowerupPickup: anim_grab_pwup
+  handBone: {fileID: 1095036010064934}
   BodySprites:
   - {fileID: 212057238543952872}
   - {fileID: 212549049793694672}
   - {fileID: 212037698675505496}
   maxPowerUpBarChangeRate: 1
+  maxPowerUpValue: 15
+  powerupGrabAnimationLength: 1
   groundForwardAcceleration: 3
   groundReverseAcceleration: 10
   groundRunningFriction: 100
-  groundMaxSpeed: 2.5
+  groundMaxSpeed: 1.8
   walkingAnimationVelocity: 0.75
   airForwardAcceleration: 0
   airReverseAcceleration: 1
