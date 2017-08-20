@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     public string animationStateFalling = "anim_fall";
     public string animationStateFloating = "anim_float_idle";
     public string animationStateFloatyWalk = "anim_float_walk";
+    public string animationStateFlightIdle = "anim_fly_idle";
+    public string animationStateFlightMove = "anim_fly_move";
     public string animationStatePowerupPickup = "anim_grab_pwup";
 
     [Tooltip("The position of the hand, used to move the powerup sprite during grab powerup.")]
@@ -272,7 +274,7 @@ public class PlayerController : MonoBehaviour
             }
             if (isUsingFlightPowerup)
             {
-                currentFlyingPowerUpMeter -= Time.deltaTime * currentVelocity.magnitude;
+                currentFlyingPowerUpMeter -= Time.deltaTime;
                 if (currentFlyingPowerUpMeter <= 0.0f)
                 {
                     isUsingFlightPowerup = false;
@@ -283,7 +285,7 @@ public class PlayerController : MonoBehaviour
             ControlPowerupFill();
 
             // Animator
-            ControlAnimator(isOnGround, isUsingAirWalk, Mathf.Abs(horizInput));
+            ControlAnimator(isOnGround, isUsingAirWalk, isUsingFlightPowerup);
 
             transform.position = new Vector3(transform.position.x, transform.position.y, -1);
         }
@@ -333,7 +335,7 @@ public class PlayerController : MonoBehaviour
                 currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
                 currentLowGravityPowerUpMeter -= lowGravityDistanceLossRate * Mathf.Abs(currentVelocity.x) * Time.deltaTime;
             }
-            else if (currentFlyingPowerUpMeter > 0.0f && currentInput.jumpHeld)
+            else if (currentFlyingPowerUpMeter > 0.0f && (currentInput.up || currentInput.down))
             {
                 forwardAcceleration = flyingAirControl;
             }
@@ -367,7 +369,7 @@ public class PlayerController : MonoBehaviour
         if (currentMovementState == ECurrentMovementState.Airborne)
         {
             maxSpeed = airMaxSpeed;
-            if (timeInCurrentState > 0.0f && currentInput.jumpDown && currentFlyingPowerUpMeter > 0.0f)
+            if (timeInCurrentState > 0.0f && currentInput.up && currentFlyingPowerUpMeter > 0.0f)
             {
                 isUsingFlightPowerup = true;
                 maxSpeed = flyingMaxHorizontalSpeed;
@@ -441,7 +443,7 @@ public class PlayerController : MonoBehaviour
                     maxFall = -flyingMaxFallSpeed;
                     maxRise = flyingMaxRiseSpeed;
                     currentVelocity += Vector2.right * horizInput * flyingAirControl * Time.deltaTime;
-                    if (currentInput.jumpHeld)
+                    if (currentInput.up)
                     {
                         currentVelocity += Vector2.up * flyingRisingAcceleration * Time.deltaTime;
                     }
@@ -584,11 +586,12 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     /// <param name="isOnGround">Is the player on the ground.</param>
     /// <param name="isUsingAirWalk">Is the player using Air Walk.</param>
-    private void ControlAnimator(bool isOnGround, bool isUsingAirWalk, float inputPercentage = 1f)
+    private void ControlAnimator(bool isOnGround, bool isUsingAirWalk, bool isUsingFlight)
     {
         // Animator facing
         string animToPlay;
-        float velocity = currentVelocity.x;
+        float velocityX = currentVelocity.x;
+        float velocityY = currentVelocity.y;
 
         if (currentVelocity.x > 0.0f)
         {
@@ -604,10 +607,11 @@ public class PlayerController : MonoBehaviour
                 s.flipX = true;
             }
         }
-        velocity = Mathf.Abs(velocity);
+        velocityX = Mathf.Abs(velocityX);
+        velocityY = Mathf.Abs(velocityY);
         if (isOnGround || isUsingAirWalk)
         {
-            if (velocity <= 0.05f)
+            if (velocityX <= 0.05f)
             {
                 animToPlay = currentLowGravityPowerUpMeter > 0f ? animationStateFloating : animationStateStanding;
 
@@ -626,6 +630,28 @@ public class PlayerController : MonoBehaviour
                     PlayAnimation(animToPlay, speed);
                 }
             }
+        }
+        else if (isUsingFlight)
+        {
+            if (velocityY <= 0.05f)
+            {
+                animToPlay = animationStateFlightIdle;
+
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
+                {
+                    PlayAnimation(animToPlay);
+                }
+            }
+            else
+            {
+                animToPlay = animationStateFlightMove;
+                
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
+                {
+                    PlayAnimation(animToPlay);
+                }
+            }
+
         }
         else
         {

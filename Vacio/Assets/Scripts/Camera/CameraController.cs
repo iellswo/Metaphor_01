@@ -100,7 +100,7 @@ public class CameraController : MonoBehaviour
             }
             else
             {
-                cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
+                // cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
             }
         }
 

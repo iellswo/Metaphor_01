@@ -22,6 +22,8 @@ GameObject:
   - component: {fileID: 114364803644947134}
   - component: {fileID: 114774068125491650}
   - component: {fileID: 114813339018915414}
+  - component: {fileID: 61497537580094564}
+  - component: {fileID: 61445271665468574}
   m_Layer: 0
   m_Name: Scene Manager
   m_TagString: Untagged
@@ -42,6 +44,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &61445271665468574
+BoxCollider2D:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1222059884220010}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_Offset: {x: 0.5, y: -15}
+  serializedVersion: 2
+  m_Size: {x: 1, y: 30}
+--- !u!61 &61497537580094564
+BoxCollider2D:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1222059884220010}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_Offset: {x: 161.95, y: -15}
+  serializedVersion: 2
+  m_Size: {x: 1, y: 30}
 --- !u!114 &114364803644947134
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -69,7 +99,8 @@ MonoBehaviour:
   MainBoundingBox: {fileID: 114813339018915414}
   LerpSpeedX: 3
   LerpSpeedY: 4
-  PlayerLeaderX: 3.2
+  PlayerLeaderX: 3
+  PlayerOffsetY: 1
   PlayerLeaderXMinSpeed: 0.5
   PlayerWindowYFromEdge: 2.5
 --- !u!114 &114813339018915414
@@ -85,8 +116,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   priority: 0
   top: 0
-  bottom: -20
+  bottom: -30
   left: 0
-  right: 100
-  screenHeight: 8.5
+  right: 183.8
+  screenHeight: 10
   screenHeightAdjustSpeed: 1
