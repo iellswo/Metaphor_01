@@ -118,6 +118,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   orbAnimator: {fileID: 95174491715821266}
   animationName: powerup_hover
+  proxyPrefab: {fileID: 0}
   powerUpType: 1
 --- !u!198 &198360987653097948
 ParticleSystem:
@@ -2746,7 +2747,7 @@ ParticleSystemRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0

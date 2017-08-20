@@ -60,6 +60,8 @@ public class PlayerController : MonoBehaviour
     public Color airWalkPowerUpBarColor = Color.red;
     [Tooltip("How far the player can move horizontally with the air walk powerup.")]
     public float maxAirWalkDistance = 2.0f;
+    [Tooltip("Effects how quickly walking on air reduces the fill amount.")]
+    public float airWalkReduction = 1f;
     [Tooltip("How much air walk power the player loses when they jump while air walking.")]
     public float airWalkJumpLoss = 2.0f;
 
@@ -214,6 +216,9 @@ public class PlayerController : MonoBehaviour
             // This bracket is reached if the player is dead or reset is pressed.  Respawn all objects and player.
             else
             {
+                currentLowGravityPowerUpMeter = 0f;
+                currentAirWalkPowerUpMeter = 0f;
+                currentFlyingPowerUpMeter = 0f;
                 transform.position = lastRespawnPoint;
                 currentVelocity = Vector2.zero;
                 SetCurrentState(ECurrentMovementState.Airborne);
@@ -262,7 +267,7 @@ public class PlayerController : MonoBehaviour
             wasUsingAirWalkLastFrame = isUsingAirWalk;
             if (isUsingAirWalk)
             {
-                currentAirWalkPowerUpMeter -= Time.deltaTime * Mathf.Abs(currentVelocity.x / groundMaxSpeed);
+                currentAirWalkPowerUpMeter -= Time.deltaTime * Mathf.Abs(currentVelocity.x / groundMaxSpeed) * airWalkReduction;
                 airWalkEmitter.Emit(1);
             }
             if (isUsingFlightPowerup)
@@ -279,9 +284,6 @@ public class PlayerController : MonoBehaviour
 
             // Animator
             ControlAnimator(isOnGround, isUsingAirWalk, Mathf.Abs(horizInput));
-
-            currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
-            currentLowGravityPowerUpMeter -= lowGravityDistanceLossRate * Mathf.Abs(currentVelocity.x) * Time.deltaTime;
 
             transform.position = new Vector3(transform.position.x, transform.position.y, -1);
         }
@@ -327,6 +329,9 @@ public class PlayerController : MonoBehaviour
             if (currentLowGravityPowerUpMeter > 0.0f)
             {
                 forwardAcceleration = lowGravityAirControl;
+                
+                currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
+                currentLowGravityPowerUpMeter -= lowGravityDistanceLossRate * Mathf.Abs(currentVelocity.x) * Time.deltaTime;
             }
             else if (currentFlyingPowerUpMeter > 0.0f && currentInput.jumpHeld)
             {
@@ -509,15 +514,24 @@ public class PlayerController : MonoBehaviour
             switch (powerUp.powerUpType)
             {
                 case PowerUp.EPowerUpType.AirWalk:
-                    currentAirWalkPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : maxAirWalkDistance;
+                    if (currentAirWalkPowerUpMeter < 0f) currentAirWalkPowerUpMeter = 0f;
+                    currentAirWalkPowerUpMeter += overrideDuration.HasValue ? overrideDuration.Value : maxAirWalkDistance;
+                    currentLowGravityPowerUpMeter = 0f;
+                    currentFlyingPowerUpMeter = 0f;
                     currentPowerupMeterMaxValue = maxPowerUpValue;
                     break;
                 case PowerUp.EPowerUpType.LowGravity:
-                    currentLowGravityPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : maxLowGravityTime;
+                    if (currentLowGravityPowerUpMeter < 0f) currentLowGravityPowerUpMeter = 0f;
+                    currentLowGravityPowerUpMeter += overrideDuration.HasValue ? overrideDuration.Value : maxLowGravityTime;
+                    currentAirWalkPowerUpMeter = 0f;
+                    currentFlyingPowerUpMeter = 0f;
                     currentPowerupMeterMaxValue = maxPowerUpValue;
                     break;
                 case PowerUp.EPowerUpType.Flying:
-                    currentFlyingPowerUpMeter = overrideDuration.HasValue ? overrideDuration.Value : flyingMaxDuration;
+                    if (currentFlyingPowerUpMeter < 0f) currentFlyingPowerUpMeter = 0f;
+                    currentFlyingPowerUpMeter += overrideDuration.HasValue ? overrideDuration.Value : flyingMaxDuration;
+                    currentAirWalkPowerUpMeter = 0f;
+                    currentLowGravityPowerUpMeter = 0f;
                     currentPowerupMeterMaxValue = maxPowerUpValue;
                     break;
                 default:
