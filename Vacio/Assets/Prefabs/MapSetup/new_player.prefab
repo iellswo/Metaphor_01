@@ -129,7 +129,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1142900838138948}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.107, z: 0}
+  m_LocalPosition: {x: 0, y: -0.091, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 4233730128019402}
@@ -142,7 +142,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1529239735800422}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.9, y: -23.6, z: -1}
+  m_LocalPosition: {x: 6.465, y: -10.644, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4141166689298180}
@@ -220,7 +220,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5af052ace4c3e194e809b0a3fbcde2fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterHalfSize: {x: 0.25, y: 0.9}
+  characterHalfSize: {x: 0.25, y: 0.8}
   maxSeekToGroundDistance: 0.33333
   spriteAnimator: {fileID: 95679777711592618}
   animationStateStanding: anim_idle
@@ -229,6 +229,8 @@ MonoBehaviour:
   animationStateFalling: anim_fall
   animationStateFloating: anim_float_idle
   animationStateFloatyWalk: anim_float_walk
+  animationStateFlightIdle: anim_fly_idle
+  animationStateFlightMove: anim_fly_move
   animationStatePowerupPickup: anim_grab_pwup
   handBone: {fileID: 1095036010064934}
   BodySprites:
@@ -253,7 +255,7 @@ MonoBehaviour:
   maxFallSpeed: 10
   fallAnimSpeed: 0.75
   airWalkPowerUpBarColor: {r: 0.7725491, g: 0.21960786, b: 0.19215688, a: 1}
-  maxAirWalkDistance: 4
+  maxAirWalkDistance: 15
   airWalkReduction: 2.2
   airWalkJumpLoss: 3.5
   lowGravityPowerUpBarColor: {r: 1, g: 0.27058825, b: 0.48235297, a: 1}
@@ -268,14 +270,14 @@ MonoBehaviour:
   lowGravityGroundRunningFriction: 1.77
   floatyWalkingAnimationVelocity: 0.25
   flyingPowerUpBarColor: {r: 0.9333334, g: 0.9215687, b: 0.5647059, a: 1}
-  flyingMaxDuration: 20
-  flyingRisingAcceleration: 15
-  flyingDescendingAcceleration: 15
+  flyingMaxDuration: 6
+  flyingRisingAcceleration: 5
+  flyingDescendingAcceleration: 5
   flyingAirControl: 15
-  flyingMaxHorizontalSpeed: 100
-  flyingMaxRiseSpeed: 100
+  flyingMaxHorizontalSpeed: 3
+  flyingMaxRiseSpeed: 3
   flyingMaxFallSpeed: 10
-  flyingAirFriction: 25
+  flyingAirFriction: 3
   powerUpBar: {fileID: 4170557457781768}
   powerUpBarGraphic: {fileID: 212549049793694672}
   airWalkEmitter: {fileID: 198411479132962934}
@@ -348,7 +350,7 @@ ParticleSystem:
   moveWithTransform: 1
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 1594536268
+  randomSeed: 2056687462
   InitialModule:
     serializedVersion: 3
     enabled: 1

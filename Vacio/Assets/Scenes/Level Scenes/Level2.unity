@@ -1104,42 +1104,14 @@ Prefab:
       propertyPath: right
       value: 183.8
       objectReference: {fileID: 0}
+    - target: {fileID: 61497537580094564, guid: e6af43c154eaaee4f9c624e90089a134,
+        type: 2}
+      propertyPath: m_Offset.x
+      value: 170
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e6af43c154eaaee4f9c624e90089a134, type: 2}
   m_IsPrefabParent: 0
---- !u!1 &1615828186 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1222059884220010, guid: e6af43c154eaaee4f9c624e90089a134,
-    type: 2}
-  m_PrefabInternal: {fileID: 1615828185}
---- !u!61 &1615828187
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1615828186}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_Offset: {x: 0.5, y: -15}
-  serializedVersion: 2
-  m_Size: {x: 1, y: 30}
---- !u!61 &1615828188
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1615828186}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_Offset: {x: 170.9, y: -15}
-  serializedVersion: 2
-  m_Size: {x: 1, y: 30}
 --- !u!1001 &1680373201
 Prefab:
   m_ObjectHideFlags: 0

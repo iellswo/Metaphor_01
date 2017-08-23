@@ -61,7 +61,7 @@ public class PlayerController : MonoBehaviour
     [Header("Air Walk Powerup")]
     public Color airWalkPowerUpBarColor = Color.red;
     [Tooltip("How far the player can move horizontally with the air walk powerup.")]
-    public float maxAirWalkDistance = 2.0f;
+    public float maxAirWalkDistance = 15.0f;
     [Tooltip("Effects how quickly walking on air reduces the fill amount.")]
     public float airWalkReduction = 1f;
     [Tooltip("How much air walk power the player loses when they jump while air walking.")]
@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Low Gravity Powerup")]
     public Color lowGravityPowerUpBarColor = Color.blue;
-    public float maxLowGravityTime = 8.0f;
+    public float maxLowGravityTime = 15.0f;
     public float lowGravityTimeLossRate = 1.0f;
     public float lowGravityDistanceLossRate = 1.0f;
     public float lowGravityJumpRisingVelocity = 10.0f;
@@ -83,7 +83,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Flight Powerup")]
     public Color flyingPowerUpBarColor = Color.white;
-    public float flyingMaxDuration = 5.0f;
+    public float flyingMaxDuration = 6.0f;
     public float flyingRisingAcceleration = 10.0f;
     public float flyingDescendingAcceleration = 10.0f;
     public float flyingAirControl = 1.0f;
@@ -520,21 +520,21 @@ public class PlayerController : MonoBehaviour
                     currentAirWalkPowerUpMeter += overrideDuration.HasValue ? overrideDuration.Value : maxAirWalkDistance;
                     currentLowGravityPowerUpMeter = 0f;
                     currentFlyingPowerUpMeter = 0f;
-                    currentPowerupMeterMaxValue = maxPowerUpValue;
+                    currentPowerupMeterMaxValue = maxAirWalkDistance;
                     break;
                 case PowerUp.EPowerUpType.LowGravity:
                     if (currentLowGravityPowerUpMeter < 0f) currentLowGravityPowerUpMeter = 0f;
                     currentLowGravityPowerUpMeter += overrideDuration.HasValue ? overrideDuration.Value : maxLowGravityTime;
                     currentAirWalkPowerUpMeter = 0f;
                     currentFlyingPowerUpMeter = 0f;
-                    currentPowerupMeterMaxValue = maxPowerUpValue;
+                    currentPowerupMeterMaxValue = maxLowGravityTime;
                     break;
                 case PowerUp.EPowerUpType.Flying:
                     if (currentFlyingPowerUpMeter < 0f) currentFlyingPowerUpMeter = 0f;
                     currentFlyingPowerUpMeter += overrideDuration.HasValue ? overrideDuration.Value : flyingMaxDuration;
                     currentAirWalkPowerUpMeter = 0f;
                     currentLowGravityPowerUpMeter = 0f;
-                    currentPowerupMeterMaxValue = maxPowerUpValue;
+                    currentPowerupMeterMaxValue = flyingMaxDuration;
                     break;
                 default:
                     Debug.Log("Powerup type not implemented.");

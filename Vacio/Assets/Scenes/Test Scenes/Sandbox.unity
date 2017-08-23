@@ -421,40 +421,6 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: flyingAirFriction
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: flyingRisingAcceleration
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: flyingDescendingAcceleration
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: flyingMaxHorizontalSpeed
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: flyingMaxRiseSpeed
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 4141166689298180, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 0.14
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: characterHalfSize.y
-      value: 0.8
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
   m_IsPrefabParent: 0

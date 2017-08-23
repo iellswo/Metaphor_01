@@ -354,6 +354,16 @@ Prefab:
       propertyPath: PlayerOffsetY
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 61497537580094564, guid: e6af43c154eaaee4f9c624e90089a134,
+        type: 2}
+      propertyPath: m_Offset.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 114813339018915414, guid: e6af43c154eaaee4f9c624e90089a134,
+        type: 2}
+      propertyPath: right
+      value: 100
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e6af43c154eaaee4f9c624e90089a134, type: 2}
   m_IsPrefabParent: 0
