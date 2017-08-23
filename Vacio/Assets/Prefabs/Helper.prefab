@@ -36,6 +36,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4733850282689942}
   - component: {fileID: 95571255815197534}
+  - component: {fileID: 114023213715237460}
   m_Layer: 0
   m_Name: Helper
   m_TagString: Untagged
@@ -92,7 +93,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1852098742653234}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.1, y: -10.68, z: 0}
+  m_LocalPosition: {x: 3.7884023, y: -14.655898, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4520446077091290}
@@ -117,6 +118,17 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &114023213715237460
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1852098742653234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 297f2d1480f0745408721b3e654ef27f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &212279034961443022
 SpriteRenderer:
   m_ObjectHideFlags: 1
