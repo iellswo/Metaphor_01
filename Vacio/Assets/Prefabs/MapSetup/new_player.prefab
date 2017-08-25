@@ -142,7 +142,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1529239735800422}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.465, y: -10.644, z: -1}
+  m_LocalPosition: {x: 2.06, y: -25.74, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4141166689298180}
@@ -258,10 +258,10 @@ MonoBehaviour:
   maxAirWalkDistance: 15
   airWalkReduction: 2.2
   airWalkJumpLoss: 3.5
-  lowGravityPowerUpBarColor: {r: 1, g: 0.27058825, b: 0.48235297, a: 1}
+  lowGravityPowerUpBarColor: {r: 0.25882354, g: 0.17254902, b: 0.83921576, a: 1}
   maxLowGravityTime: 15
-  lowGravityTimeLossRate: 0
-  lowGravityDistanceLossRate: 1.6
+  lowGravityTimeLossRate: 2.5
+  lowGravityDistanceLossRate: 0.4
   lowGravityJumpRisingVelocity: 11
   lowGravityGravity: 15
   lowGravityAirControl: 1
