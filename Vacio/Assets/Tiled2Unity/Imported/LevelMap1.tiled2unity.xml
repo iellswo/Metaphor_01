@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <!--Tiled2Unity generated xml data-->
 <!--Do not modify by hand-->
-<!--Last exported: 8/24/2017 10:24:52 PM-->
+<!--Last exported: 8/24/2017 10:43:11 PM-->
 <Tiled2Unity version="1.0.9.4">
   <AssignMaterial mesh="mesh_0001" material="tile_sheet" />
   <AssignMaterial mesh="mesh_0003" material="tile_sheet" />
@@ -414,10 +414,10 @@
       </GameObject>
     </GameObject>
     <GameObject name="Decoration" x="0" y="0" z="0">
-      <GameObject name="tile_sheet" copy="mesh_0005" sortingLayerName="" sortingOrder="4" opacity="1" />
+      <GameObject name="tile_sheet" copy="mesh_0005" sortingLayerName="Foreground" sortingOrder="4" opacity="1" />
     </GameObject>
     <GameObject name="Touchup" x="0" y="0" z="0">
-      <GameObject name="tile_sheet" copy="mesh_0006" sortingLayerName="" sortingOrder="5" opacity="1" />
+      <GameObject name="tile_sheet" copy="mesh_0006" sortingLayerName="Foreground" sortingOrder="5" opacity="1" />
       <GameObject name="Collision">
         <EdgeCollider2D>
           <Points>61.125,-14 61,-14.1875 61,-14.3125 61.0625,-14.40625 61.0625,-14.5625 61,-14.8125 61,-14.84375 61.0625,-14.96875 62,-15 62,-14 61.125,-14</Points>
