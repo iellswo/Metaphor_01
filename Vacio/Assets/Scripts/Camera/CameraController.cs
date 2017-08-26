@@ -28,6 +28,7 @@ public class CameraController : MonoBehaviour
     public float PlayerLeaderXMinSpeed = 0.5f;
 
     public float PlayerWindowYFromEdge = 1.5f;
+    public float PlayerWindowXFromEdge = 2.5f;
 
     private float _lastSafeY = 0f;
 
@@ -56,33 +57,43 @@ public class CameraController : MonoBehaviour
 
         cameraPosition.z = (Vector3.back * 10f).z;
 
-        // Handle x movement
-        if (Player.currentVelocity.x > PlayerLeaderXMinSpeed)
-        {
-            playerPosition.x += PlayerLeaderX;
-            _lastTargetX = playerPosition.x;
-        }
-        else if (Player.currentVelocity.x < -1 * PlayerLeaderXMinSpeed)
-        {
-            playerPosition.x -= PlayerLeaderX;
-            _lastTargetX = playerPosition.x;
-        }
-        else
-        {
-            playerPosition.x = _lastTargetX;
-        }
 
-        cameraPosition.x = Lerp(cameraPosition.x, playerPosition.x, LerpSpeedX);
-
-        // Handle y movement
         if (Player.currentMovementState == PlayerController.ECurrentMovementState.Grounded)
         {
+            // Handle x movement
+            if (Player.currentVelocity.x > PlayerLeaderXMinSpeed)
+            {
+                playerPosition.x += PlayerLeaderX;
+                _lastTargetX = playerPosition.x;
+            }
+            else if (Player.currentVelocity.x < -1 * PlayerLeaderXMinSpeed)
+            {
+                playerPosition.x -= PlayerLeaderX;
+                _lastTargetX = playerPosition.x;
+            }
+            else
+            {
+                playerPosition.x = _lastTargetX;
+            }
+
+            cameraPosition.x = Lerp(cameraPosition.x, playerPosition.x, LerpSpeedX);
+            
+            // Handle y movement
             _lastSafeY = playerPosition.y + PlayerOffsetY;
 
             cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
         }
         else
         {
+            // Handle x movement
+            if (Player.currentVelocity.x > PlayerLeaderXMinSpeed)
+            {
+                playerPosition.x += PlayerLeaderX;
+            }
+
+            cameraPosition.x = Lerp(cameraPosition.x, playerPosition.x, LerpSpeedX);
+
+            // Handle y movement
             float windowDistance = (.5f * MainBoundingBox.screenHeight - PlayerWindowYFromEdge);
             if (Mathf.Abs(cameraPosition.y - playerPosition.y) >= windowDistance)
             {
@@ -97,10 +108,6 @@ public class CameraController : MonoBehaviour
                 }
 
                 cameraPosition.y = desiredCameraY;
-            }
-            else
-            {
-                // cameraPosition.y = Lerp(cameraPosition.y, _lastSafeY, LerpSpeedY);
             }
         }
 
