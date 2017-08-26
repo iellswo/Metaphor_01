@@ -19,7 +19,10 @@ public class AiMovementNode : MonoBehaviour
         AiMovementNodeManager manager;
         if (AiMovementNodeManager.TryGetInstance(out manager))
         {
-
+            foreach (SConnectionData data in neighborsData)
+            {
+                manager.AddConnection(this, data.otherNode, data.connectionType);
+            }
         }
     }
 
