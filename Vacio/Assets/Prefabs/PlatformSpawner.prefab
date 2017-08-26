@@ -54,6 +54,6 @@ MonoBehaviour:
   objectToSpawn: {fileID: 114964857414792018, guid: 98a1f574b524bfd4aa72a9825265f5d2,
     type: 2}
   spawnData: []
-  respawnOnTimer: 0
+  respawnOnTimer: 1
   respawnOnDeath: 1
   timeToRespawn: 10
