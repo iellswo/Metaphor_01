@@ -42,6 +42,8 @@ public class CameraController : MonoBehaviour
         // Set camera position to calculated location.
         Camera.main.transform.position = playerPosition;
 
+        playerPosition.y += PlayerOffsetY;
+
         _lastTargetX = playerPosition.x;
     }
 
