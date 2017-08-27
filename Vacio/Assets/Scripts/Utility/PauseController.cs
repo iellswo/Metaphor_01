@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PauseController : MonoBehaviour
 {
     public Canvas MenuCanvas;
     public PlayerController Controller;
+
+    private string MainMenuLevelName = "Main Menu";
 
     // Use this for initialization
     void Start()
@@ -24,10 +27,27 @@ public class PauseController : MonoBehaviour
         }
     }
 
-    #region Button Commands
-    public void ContinuePressed()
+    #region Button Callbacks
+    public void OnButton_Continue()
     {
         UnpauseGame();
+    }
+
+    public void OnButton_Restart()
+    {
+        Initiate.Fade(SceneManager.GetActiveScene().name, Color.black, 1.5f);
+        UnpauseGame();
+    }
+
+    public void OnButton_MainMenu()
+    {
+        Initiate.Fade(MainMenuLevelName, Color.black, 1f);
+        UnpauseGame();
+    }
+
+    public void OnButton_Quit()
+    {
+        Application.Quit();
     }
     #endregion
 

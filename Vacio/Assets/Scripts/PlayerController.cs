@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Maximum value of a powerup, used for fill.")]
     public float maxPowerUpValue = 15f;
     public float powerupGrabAnimationLength = 1f;
+    public float deathFadeLength = 1f;
 
     [Header("Ground Movement Data")]
     [Tooltip("How quickly the player accelerates from standing to running on the ground (m/s/s).")]
@@ -218,16 +219,24 @@ public class PlayerController : MonoBehaviour
             // This bracket is reached if the player is dead or reset is pressed.  Respawn all objects and player.
             else
             {
-                currentLowGravityPowerUpMeter = 0f;
-                currentAirWalkPowerUpMeter = 0f;
-                currentFlyingPowerUpMeter = 0f;
-                transform.position = lastRespawnPoint;
-                currentVelocity = Vector2.zero;
-                SetCurrentState(ECurrentMovementState.Airborne);
+                if (timeInCurrentState >= deathFadeLength)
+                {
+                    currentLowGravityPowerUpMeter = 0f;
+                    currentAirWalkPowerUpMeter = 0f;
+                    currentFlyingPowerUpMeter = 0f;
+                    transform.position = lastRespawnPoint;
+                    currentVelocity = Vector2.zero;
 
-                PlayAnimation(animationStateJumping);
+                    SpawnTracker.TriggerReset();
 
-                SpawnTracker.TriggerReset();
+                    Initiate.FadeIn(Color.black, 1f);
+                }
+                if (timeInCurrentState >= 2 * deathFadeLength)
+                {
+                    PlayAnimation(animationStateJumping);
+                    
+                    SetCurrentState(ECurrentMovementState.Airborne);
+                }
             }
 
             if (canJump && currentInput.jumpDown)
@@ -572,6 +581,7 @@ public class PlayerController : MonoBehaviour
                 animatorState = animationStateJumping;
                 break;
             case ECurrentMovementState.Dead:
+                Initiate.FadeOut(Color.black, 2f);
                 break;
             case ECurrentMovementState.Interacting:
                 currentVelocity = Vector2.zero;

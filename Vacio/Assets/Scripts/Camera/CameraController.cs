@@ -122,6 +122,13 @@ public class CameraController : MonoBehaviour
     // This only works if the player is moved to respawn location BEFORE this is called.
     public void TriggerDeath()
     {
+        Vector3 playerPosition = Player.gameObject.transform.position;
+
+        playerPosition.y += PlayerOffsetY;
+
+        // Set camera position to calculated location.
+        Camera.main.transform.position = playerPosition;
+
         _lastTargetX = Player.transform.position.x;
     }
 
