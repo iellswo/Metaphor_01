@@ -142,7 +142,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1529239735800422}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.06, y: -25.74, z: -1}
+  m_LocalPosition: {x: 2.03, y: -14.74, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4141166689298180}
@@ -220,7 +220,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5af052ace4c3e194e809b0a3fbcde2fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterHalfSize: {x: 0.25, y: 0.8}
+  characterHalfSize: {x: 0.25, y: 0.9}
   maxSeekToGroundDistance: 0.33333
   spriteAnimator: {fileID: 95679777711592618}
   animationStateStanding: anim_idle

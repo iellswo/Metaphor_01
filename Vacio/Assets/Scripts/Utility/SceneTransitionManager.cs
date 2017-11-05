@@ -5,11 +5,12 @@ using UnityEngine.SceneManagement;
 
 public class SceneTransitionManager : MonoBehaviour
 {
-    public int TargetScene;
-    // TODO: which entrance to the scene to load?
+    // public int TargetScene;
+    public string TargetSceneName;
 
     public void TriggerLoadScene()
     {
-        SceneManager.LoadScene(TargetScene);
+        Initiate.Fade(TargetSceneName, Color.black, 1f);
+        // SceneManager.LoadScene(TargetScene);
     }
 }
