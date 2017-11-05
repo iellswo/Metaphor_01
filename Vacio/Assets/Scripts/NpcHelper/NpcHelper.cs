@@ -67,7 +67,7 @@ public class NpcHelper : MonoBehaviour
                     xOffset *= moveSpeed * Time.deltaTime;
                     Vector3 targetPosition = transform.position + Vector3.right * xOffset - Vector3.up * height;
                     AiMovementNodeManager.SNodeConnection connection = manager.GetNearestConnection(targetPosition);
-                    targetPosition = connection.GetClosestPointOnLine(targetPosition, clampEnds: false);
+                    targetPosition = connection.GetClosestPointOnLine(targetPosition, clampEndsAmount: 0.25f);
                     float targetX = targetPosition.x;
                     if (targetX < connection.GetLeftmost().x)
                     {

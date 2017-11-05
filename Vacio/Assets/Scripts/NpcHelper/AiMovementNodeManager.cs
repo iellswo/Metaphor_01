@@ -68,17 +68,12 @@ public class AiMovementNodeManager : MonoBehaviour
             return ret;
         }
 
-        public Vector3 GetClosestPointOnLine(Vector3 position, bool clampEnds)
+        public Vector3 GetClosestPointOnLine(Vector3 position, float clampEndsAmount)
         {
             Vector3 ret = Vector3.zero;
-            if (clampEnds)
-            {
-                ret = ProjectPointOnLineSegment(first.transform.position, second.transform.position, position);
-            }
-            else
-            {
-                ret = Vector3.Project(position - second.transform.position, first.transform.position - second.transform.position) + second.transform.position;
-            }
+            position.x = Mathf.Clamp(position.x, GetLeftmost().x - clampEndsAmount, GetRightmost().x + clampEndsAmount);
+
+            ret = Vector3.Project(position - second.transform.position, first.transform.position - second.transform.position) + second.transform.position;
             return ret;
         }
     }
