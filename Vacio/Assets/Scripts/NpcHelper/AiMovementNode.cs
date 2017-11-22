@@ -44,6 +44,15 @@ public class AiMovementNode : MonoBehaviour
                         case AiMovementNodeManager.EConnectionType.Walking:
                             gizmoColor = Color.green;
                             break;
+                        case AiMovementNodeManager.EConnectionType.ShortHop:
+                            gizmoColor = Color.yellow;
+                            break;
+                        case AiMovementNodeManager.EConnectionType.LiftPlayerFirst:
+                            gizmoColor = Color.cyan;
+                            break;
+                        case AiMovementNodeManager.EConnectionType.LiftSelfFirst:
+                            gizmoColor = Color.red;
+                            break;
                         default:
                             gizmoColor = Color.white;
                             break;

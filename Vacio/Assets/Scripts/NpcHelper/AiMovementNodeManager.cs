@@ -7,7 +7,10 @@ public class AiMovementNodeManager : MonoBehaviour
 {
     public enum EConnectionType
     {
-        Walking,
+        Walking = 0,
+        LiftSelfFirst = 1,
+        LiftPlayerFirst = 2,
+        ShortHop = 3,
     }
 
     public class SNodeConnection
@@ -75,6 +78,34 @@ public class AiMovementNodeManager : MonoBehaviour
 
             ret = Vector3.Project(position - second.transform.position, first.transform.position - second.transform.position) + second.transform.position;
             return ret;
+        }
+
+        public Vector3 GetCloserNodePosition(Vector3 position)
+        {
+            Vector3 closerPosition;
+            if ((first.transform.position - position).sqrMagnitude < (second.transform.position - position).sqrMagnitude)
+            {
+                closerPosition = first.transform.position;
+            }
+            else
+            {
+                closerPosition = second.transform.position;
+            }
+            return closerPosition;
+        }
+
+        public Vector3 GetFartherNodePosition(Vector3 position)
+        {
+            Vector3 fartherPosition;
+            if ((first.transform.position - position).sqrMagnitude > (second.transform.position - position).sqrMagnitude)
+            {
+                fartherPosition = first.transform.position;
+            }
+            else
+            {
+                fartherPosition = second.transform.position;
+            }
+            return fartherPosition;
         }
     }
     private List<SNodeConnection> allConnections = new List<SNodeConnection>();
