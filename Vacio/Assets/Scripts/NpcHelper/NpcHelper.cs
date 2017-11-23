@@ -81,7 +81,7 @@ public class NpcHelper : MonoBehaviour
     private void HelperState_Update(EHelperState state)
     {
         timeInCurrentState += Time.deltaTime;
-        Vector3 targetPosition = playerTarget.transform.position;
+        Vector3 targetPosition = playerTarget.GetAITargetPosition();
         AiMovementNodeManager aiManager;
         if (AiMovementNodeManager.TryGetInstance(out aiManager))
         {

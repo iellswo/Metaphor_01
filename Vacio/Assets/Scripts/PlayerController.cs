@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour
     public float airMaxSpeed = float.PositiveInfinity;
     [Tooltip("How quickly the player rises when they begin to jump (m/s)")]
     public float jumpRisingVelocity = 10.0f;
+    
     [Tooltip("How much speed is added to the player's forward velocity when they jump. (m/s)")]
     public float forwardJumpVelocityBoost = 1.0f;
     [Tooltip("How quickly the player gains downwards velocity whilte airborne (m/s/s)")]
@@ -96,6 +97,8 @@ public class PlayerController : MonoBehaviour
     [Header("AI Helper")]
     public float climbUpToHelperSpeed = 1.0f;
     public float pushHelperUpTime = 1.0f;
+    public float DistanceToTrailBehindPlayer = 3f;
+    public float TrailBehindPlayerFloatSpeed = 3f;
 
     [Header("GameObject Connections")]
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
@@ -103,6 +106,8 @@ public class PlayerController : MonoBehaviour
     public SpriteRenderer powerUpBarGraphic;
     [Tooltip("The particle system on the player that makes SFX for air walking.")]
     public ParticleSystem airWalkEmitter;
+
+    private Vector3 CurrentAIPosition = new Vector3();
 
     private struct SInput
     {
@@ -160,7 +165,7 @@ public class PlayerController : MonoBehaviour
     private GameObject currentInteractionProxy = null;
 
     private bool hasPlayedAnimationThisFrame = false;
-
+    
     //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
     void Awake()
@@ -168,6 +173,7 @@ public class PlayerController : MonoBehaviour
         lastRespawnPoint = transform.position;
         //Steamworks.SteamAPI.Init(); // TODO SHould move this to a GameManager.
         //Steamworks.SteamController.Init("");
+        CurrentAIPosition = transform.position;
     }
 
     // Update is called once per frame
@@ -323,6 +329,21 @@ public class PlayerController : MonoBehaviour
                 SetCurrentState(ECurrentMovementState.Grounded);
             }
         }
+
+        float desiredX = Mathf.MoveTowards(CurrentAIPosition.x, 
+            transform.position.x - Mathf.Sign(currentVelocity.x) * DistanceToTrailBehindPlayer, 
+            Mathf.Abs(currentVelocity.x) * Time.deltaTime * TrailBehindPlayerFloatSpeed);
+
+        float delta = desiredX - CurrentAIPosition.x;
+
+        if (Mathf.Sign(delta) != Mathf.Sign(currentVelocity.x))
+        {
+            desiredX = CurrentAIPosition.x;
+        }
+
+        desiredX = Mathf.Clamp(desiredX, transform.position.x - DistanceToTrailBehindPlayer, transform.position.x + DistanceToTrailBehindPlayer);
+
+        CurrentAIPosition = new Vector3(desiredX, transform.position.y, transform.position.z);
     }
 
     private void HandleMovement(SInput currentInput, out bool canJump, out bool isOnGround)
@@ -789,4 +810,8 @@ public class PlayerController : MonoBehaviour
         SetCurrentState(ECurrentMovementState.PlayerIsLiftingHelperToLedge);
     }
 
+    public Vector3 GetAITargetPosition()
+    {
+        return CurrentAIPosition;
+    }
 }
