@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
 
     [Tooltip("The position of the hand, used to move the powerup sprite during grab powerup.")]
     public GameObject handBone;
-    
+
     [Tooltip("List here all sprite renderers that you want to flip when the player reverses direction.")]
     public List<SpriteRenderer> BodySprites = new List<SpriteRenderer>();
     public float maxPowerUpBarChangeRate = 1.0f;
@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour
     public float airMaxSpeed = float.PositiveInfinity;
     [Tooltip("How quickly the player rises when they begin to jump (m/s)")]
     public float jumpRisingVelocity = 10.0f;
+    
     [Tooltip("How much speed is added to the player's forward velocity when they jump. (m/s)")]
     public float forwardJumpVelocityBoost = 1.0f;
     [Tooltip("How quickly the player gains downwards velocity whilte airborne (m/s/s)")]
@@ -93,12 +94,20 @@ public class PlayerController : MonoBehaviour
     public float flyingMaxFallSpeed = 10.0f;
     public float flyingAirFriction = 1.0f;
 
+    [Header("AI Helper")]
+    public float climbUpToHelperSpeed = 1.0f;
+    public float pushHelperUpTime = 1.0f;
+    public float DistanceToTrailBehindPlayer = 3f;
+    public float TrailBehindPlayerFloatSpeed = 3f;
+
     [Header("GameObject Connections")]
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
     public Transform powerUpBar;
     public SpriteRenderer powerUpBarGraphic;
     [Tooltip("The particle system on the player that makes SFX for air walking.")]
     public ParticleSystem airWalkEmitter;
+
+    private Vector3 CurrentAIPosition = new Vector3();
 
     private struct SInput
     {
@@ -111,7 +120,7 @@ public class PlayerController : MonoBehaviour
             float vertical = Input.GetAxis("Vertical");
             ret.left = horizontal;
             ret.right = horizontal;
-            ret.down =  vertical < 0.0f;
+            ret.down = vertical < 0.0f;
             ret.up = vertical > 0.0f;
             ret.jumpDown = Input.GetButtonDown("Jump");
             ret.jumpHeld = Input.GetButton("Jump");
@@ -128,6 +137,9 @@ public class PlayerController : MonoBehaviour
         Airborne,
         Dead,
         Interacting,
+        HelperIsPullingPlayerUpToLedge,
+        HelperIsLiftingPlayerUpToLedge,
+        PlayerIsLiftingHelperToLedge,
     }
 
     [HideInInspector]
@@ -143,16 +155,17 @@ public class PlayerController : MonoBehaviour
 
     [HideInInspector]
     public Vector2 currentVelocity = Vector2.zero;
+    private Vector3 climbToLedgeTarget = Vector3.zero;
 
     private Vector2 lastRespawnPoint = Vector2.zero;
-    
+
     private float fillMax = .696f;
     private float fillMin = .507f;
     private float currentInteractionDuration = 0;
     private GameObject currentInteractionProxy = null;
 
     private bool hasPlayedAnimationThisFrame = false;
-
+    
     //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
     void Awake()
@@ -160,6 +173,7 @@ public class PlayerController : MonoBehaviour
         lastRespawnPoint = transform.position;
         //Steamworks.SteamAPI.Init(); // TODO SHould move this to a GameManager.
         //Steamworks.SteamController.Init("");
+        CurrentAIPosition = transform.position;
     }
 
     // Update is called once per frame
@@ -234,7 +248,7 @@ public class PlayerController : MonoBehaviour
                 if (timeInCurrentState >= 2 * deathFadeLength)
                 {
                     PlayAnimation(animationStateJumping);
-                    
+
                     SetCurrentState(ECurrentMovementState.Airborne);
                 }
             }
@@ -303,8 +317,8 @@ public class PlayerController : MonoBehaviour
             if (currentInteractionProxy != null)
             {
                 currentInteractionProxy.transform.position =
-                    handBone != null 
-                    ? handBone.transform.position 
+                    handBone != null
+                    ? handBone.transform.position
                     : Vector3.Lerp(currentInteractionProxy.transform.position, transform.position, 4 * Time.deltaTime);
             }
 
@@ -315,6 +329,21 @@ public class PlayerController : MonoBehaviour
                 SetCurrentState(ECurrentMovementState.Grounded);
             }
         }
+
+        float desiredX = Mathf.MoveTowards(CurrentAIPosition.x, 
+            transform.position.x - Mathf.Sign(currentVelocity.x) * DistanceToTrailBehindPlayer, 
+            Mathf.Abs(currentVelocity.x) * Time.deltaTime * TrailBehindPlayerFloatSpeed);
+
+        float delta = desiredX - CurrentAIPosition.x;
+
+        if (Mathf.Sign(delta) != Mathf.Sign(currentVelocity.x))
+        {
+            desiredX = CurrentAIPosition.x;
+        }
+
+        desiredX = Mathf.Clamp(desiredX, transform.position.x - DistanceToTrailBehindPlayer, transform.position.x + DistanceToTrailBehindPlayer);
+
+        CurrentAIPosition = new Vector3(desiredX, transform.position.y, transform.position.z);
     }
 
     private void HandleMovement(SInput currentInput, out bool canJump, out bool isOnGround)
@@ -340,7 +369,7 @@ public class PlayerController : MonoBehaviour
             if (currentLowGravityPowerUpMeter > 0.0f)
             {
                 forwardAcceleration = lowGravityAirControl;
-                
+
                 currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
                 currentLowGravityPowerUpMeter -= lowGravityDistanceLossRate * Mathf.Abs(currentVelocity.x) * Time.deltaTime;
             }
@@ -507,6 +536,24 @@ public class PlayerController : MonoBehaviour
                 transform.position = transform.position + offset;
                 canJump = false; // TODO Ghost jump.
                 break;
+            case ECurrentMovementState.HelperIsPullingPlayerUpToLedge:
+            case ECurrentMovementState.HelperIsLiftingPlayerUpToLedge:
+                currentVelocity = Vector2.zero;
+                // Ignore Z-depth, it can mess up this calculation
+                currentPosition.x = Mathf.MoveTowards(transform.position.x, climbToLedgeTarget.x, climbUpToHelperSpeed * Time.deltaTime);
+                currentPosition.y = Mathf.MoveTowards(transform.position.y, climbToLedgeTarget.y, climbUpToHelperSpeed * Time.deltaTime);
+                transform.position = currentPosition;
+                if (transform.position.x == climbToLedgeTarget.x && transform.position.y == climbToLedgeTarget.y)
+                {
+                    SetCurrentState(ECurrentMovementState.Grounded);
+                }
+                break;
+            case ECurrentMovementState.PlayerIsLiftingHelperToLedge:
+                if (timeInCurrentState > pushHelperUpTime)
+                {
+                    SetCurrentState(ECurrentMovementState.Grounded);
+                }
+                break;
             default:
                 break;
         }
@@ -655,7 +702,7 @@ public class PlayerController : MonoBehaviour
             else
             {
                 animToPlay = animationStateFlightMove;
-                
+
                 if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
                 {
                     PlayAnimation(animToPlay);
@@ -710,7 +757,7 @@ public class PlayerController : MonoBehaviour
             powerUpBar.gameObject.SetActive(false);
         }
     }
-    
+
     /// <summary>
     /// Helper function that directly manipulates the sprite shader to show the fill effect.
     /// </summary>
@@ -739,5 +786,32 @@ public class PlayerController : MonoBehaviour
         spriteAnimator.speed = animationSpped;
         spriteAnimator.CrossFade(animationToPlay, 0f);
         hasPlayedAnimationThisFrame = true;
+    }
+
+    public bool IsPressingAiHelperButton()
+    {
+        return SInput.GetCurrentInput().interactDown;
+    }
+
+    public void AiHelperPullsPlayerUpOntoLedge(Vector3 segmentEndPosition)
+    {
+        SetCurrentState(ECurrentMovementState.HelperIsPullingPlayerUpToLedge);
+        climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
+    }
+
+    public void AiHelperLiftsPlayerUpOntoLedge(Vector3 segmentEndPosition)
+    {
+        SetCurrentState(ECurrentMovementState.HelperIsLiftingPlayerUpToLedge);
+        climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
+    }
+
+    public void LiftAiHelperOntoLedge(Vector3 position)
+    {
+        SetCurrentState(ECurrentMovementState.PlayerIsLiftingHelperToLedge);
+    }
+
+    public Vector3 GetAITargetPosition()
+    {
+        return CurrentAIPosition;
     }
 }
