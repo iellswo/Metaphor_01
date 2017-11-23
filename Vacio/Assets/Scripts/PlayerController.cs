@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
 
     [Tooltip("The position of the hand, used to move the powerup sprite during grab powerup.")]
     public GameObject handBone;
-    
+
     [Tooltip("List here all sprite renderers that you want to flip when the player reverses direction.")]
     public List<SpriteRenderer> BodySprites = new List<SpriteRenderer>();
     public float maxPowerUpBarChangeRate = 1.0f;
@@ -95,6 +95,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("AI Helper")]
     public float climbUpToHelperSpeed = 1.0f;
+    public float pushHelperUpTime = 1.0f;
 
     [Header("GameObject Connections")]
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
@@ -114,7 +115,7 @@ public class PlayerController : MonoBehaviour
             float vertical = Input.GetAxis("Vertical");
             ret.left = horizontal;
             ret.right = horizontal;
-            ret.down =  vertical < 0.0f;
+            ret.down = vertical < 0.0f;
             ret.up = vertical > 0.0f;
             ret.jumpDown = Input.GetButtonDown("Jump");
             ret.jumpHeld = Input.GetButton("Jump");
@@ -133,6 +134,7 @@ public class PlayerController : MonoBehaviour
         Interacting,
         HelperIsPullingPlayerUpToLedge,
         HelperIsLiftingPlayerUpToLedge,
+        PlayerIsLiftingHelperToLedge,
     }
 
     [HideInInspector]
@@ -151,7 +153,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 climbToLedgeTarget = Vector3.zero;
 
     private Vector2 lastRespawnPoint = Vector2.zero;
-    
+
     private float fillMax = .696f;
     private float fillMin = .507f;
     private float currentInteractionDuration = 0;
@@ -240,7 +242,7 @@ public class PlayerController : MonoBehaviour
                 if (timeInCurrentState >= 2 * deathFadeLength)
                 {
                     PlayAnimation(animationStateJumping);
-                    
+
                     SetCurrentState(ECurrentMovementState.Airborne);
                 }
             }
@@ -309,8 +311,8 @@ public class PlayerController : MonoBehaviour
             if (currentInteractionProxy != null)
             {
                 currentInteractionProxy.transform.position =
-                    handBone != null 
-                    ? handBone.transform.position 
+                    handBone != null
+                    ? handBone.transform.position
                     : Vector3.Lerp(currentInteractionProxy.transform.position, transform.position, 4 * Time.deltaTime);
             }
 
@@ -346,7 +348,7 @@ public class PlayerController : MonoBehaviour
             if (currentLowGravityPowerUpMeter > 0.0f)
             {
                 forwardAcceleration = lowGravityAirControl;
-                
+
                 currentLowGravityPowerUpMeter -= lowGravityTimeLossRate * Time.deltaTime;
                 currentLowGravityPowerUpMeter -= lowGravityDistanceLossRate * Mathf.Abs(currentVelocity.x) * Time.deltaTime;
             }
@@ -525,6 +527,12 @@ public class PlayerController : MonoBehaviour
                     SetCurrentState(ECurrentMovementState.Grounded);
                 }
                 break;
+            case ECurrentMovementState.PlayerIsLiftingHelperToLedge:
+                if (timeInCurrentState > pushHelperUpTime)
+                {
+                    SetCurrentState(ECurrentMovementState.Grounded);
+                }
+                break;
             default:
                 break;
         }
@@ -673,7 +681,7 @@ public class PlayerController : MonoBehaviour
             else
             {
                 animToPlay = animationStateFlightMove;
-                
+
                 if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
                 {
                     PlayAnimation(animToPlay);
@@ -728,7 +736,7 @@ public class PlayerController : MonoBehaviour
             powerUpBar.gameObject.SetActive(false);
         }
     }
-    
+
     /// <summary>
     /// Helper function that directly manipulates the sprite shader to show the fill effect.
     /// </summary>
@@ -774,6 +782,11 @@ public class PlayerController : MonoBehaviour
     {
         SetCurrentState(ECurrentMovementState.HelperIsLiftingPlayerUpToLedge);
         climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
+    }
+
+    public void LiftAiHelperOntoLedge(Vector3 position)
+    {
+        SetCurrentState(ECurrentMovementState.PlayerIsLiftingHelperToLedge);
     }
 
 }

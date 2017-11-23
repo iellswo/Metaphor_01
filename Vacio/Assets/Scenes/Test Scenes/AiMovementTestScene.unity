@@ -4629,7 +4629,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   neighborsData:
   - otherNode: {fileID: 917600486}
-    connectionType: 1
+    connectionType: 2
 --- !u!4 &1359192869
 Transform:
   m_ObjectHideFlags: 0

@@ -32,13 +32,8 @@ public class NpcHelper : MonoBehaviour
         ClimbingToTopOfSegment,
         WaitingToPullPlayerUp,
         WaitingToLiftPlayerUp,
-        //ReadyToInteractWithPlayer,
-        //BoostingPlayerLeftToRight,
-        ////PullingPlayerLeftToRight,
-        ////BoostingPlayerRightToLeft,
-        ////PullingPlayerRightToLeft,
-        //LiftingPlayer,
-        //LiftingSelf,
+        WaitingForPlayerToLiftUsUp,
+        WaitingForPlayerToPullUsUp,
     }
     private EHelperState internal_currentHelperState = EHelperState.Start;
     private float timeInCurrentState = 0.0f;
@@ -115,8 +110,8 @@ public class NpcHelper : MonoBehaviour
                         case AiMovementNodeManager.EConnectionType.LiftSelfFirst:
                             if (segmentEndPosition.y > segmentStartPosition.y)
                             {
-                                // Climb from the bottom to the top.
-                                CurrentHelperState = EHelperState.ClimbingToTopOfSegment;
+                                // Wait for the player to push us to the top.
+                                CurrentHelperState = EHelperState.WaitingForPlayerToLiftUsUp;
                                 segmentTimeToReachEnd = (segmentStartPosition - segmentEndPosition).magnitude * climbSpeed;
                             }
                             else
@@ -126,7 +121,16 @@ public class NpcHelper : MonoBehaviour
                             }
                             break;
                         case AiMovementNodeManager.EConnectionType.LiftPlayerFirst:
-                            CurrentHelperState = EHelperState.WaitingToLiftPlayerUp;
+                            if (segmentEndPosition.y > segmentStartPosition.y)
+                            {
+                                // Wait to push the player to the top.
+                                CurrentHelperState = EHelperState.WaitingToLiftPlayerUp;
+                            }
+                            else
+                            {
+                                // Just jump down.
+                                goto case AiMovementNodeManager.EConnectionType.ShortHop;
+                            }
                             break;
                         default:
                             Debug.LogError("HelperState_Update doesn't know what to do when attaching to segment of type " + currentSegment.connectionType, gameObject);
@@ -179,7 +183,9 @@ public class NpcHelper : MonoBehaviour
                                 CurrentHelperState = EHelperState.WaitingToPullPlayerUp;
                                 break;
                             case AiMovementNodeManager.EConnectionType.LiftPlayerFirst:
-                            // TODO we're done climbing and standing next to the player
+                                // Going to this state is safe because we will detach from the ledge and follow when they walk away, or we will jump down if they go back.
+                                CurrentHelperState = EHelperState.WaitingToPullPlayerUp;
+                                break;
                             default:
                                 Debug.LogError("Finished climbing but no idea what to do now.", gameObject);
                                 break;
@@ -210,8 +216,8 @@ public class NpcHelper : MonoBehaviour
                     }
                     break;
                 case EHelperState.WaitingToLiftPlayerUp:
-                    bottomNode = currentSegment.GetFartherNodePosition(transform.position);
-                    topNode = currentSegment.GetCloserNodePosition(transform.position);
+                    bottomNode = currentSegment.GetCloserNodePosition(transform.position);
+                    topNode = currentSegment.GetFartherNodePosition(transform.position);
                     targetToBottom = (targetPosition - bottomNode).magnitude;
                     targetToTop = (targetPosition - topNode).magnitude;
                     if (targetToBottom < targetToTop && Mathf.Abs(bottomNode.x - targetPosition.x) > targetDistanceToDetachFromInteractionSegment)
@@ -219,17 +225,40 @@ public class NpcHelper : MonoBehaviour
                         // If the player walks away from the bottom, follow them.
                         CurrentHelperState = EHelperState.Walking;
                     }
-                    else if (targetToBottom > targetToTop && Mathf.Abs(topNode.x - targetPosition.x) > targetDistanceToDetachFromInteractionSegment)
+                    else if (playerTarget.IsPressingAiHelperButton())
                     {
-                        // If the player somehow gets up to the top without interacting and is walking away, climb up to them.
+                        if (targetToBottom < targetToTop)
+                        {
+                            // Lift the player up
+                            playerTarget.AiHelperLiftsPlayerUpOntoLedge(segmentEndPosition);
+                        }
+                        else
+                        {
+                            // Get pulled up by the player.
+                            playerTarget.LiftAiHelperOntoLedge(transform.position);
+                            CurrentHelperState = EHelperState.ClimbingToTopOfSegment;
+                            segmentStartPosition = bottomNode;
+                            segmentEndPosition = topNode;
+                            segmentTimeToReachEnd = (segmentStartPosition - segmentEndPosition).magnitude * climbSpeed;
+                        }
+                    }
+                    break;
+                case EHelperState.WaitingForPlayerToLiftUsUp:
+                    bottomNode = currentSegment.GetCloserNodePosition(transform.position);
+                    topNode = currentSegment.GetFartherNodePosition(transform.position);
+                    targetToBottom = (targetPosition - bottomNode).magnitude;
+                    targetToTop = (targetPosition - topNode).magnitude;
+                    if (targetToBottom < targetToTop && targetToBottom > targetDistanceToDetachFromInteractionSegment)
+                    {
+                        CurrentHelperState = EHelperState.Walking;
+                    }
+                    else if (playerTarget.IsPressingAiHelperButton())
+                    {
+                        playerTarget.LiftAiHelperOntoLedge(transform.position);
                         CurrentHelperState = EHelperState.ClimbingToTopOfSegment;
                         segmentStartPosition = bottomNode;
                         segmentEndPosition = topNode;
                         segmentTimeToReachEnd = (segmentStartPosition - segmentEndPosition).magnitude * climbSpeed;
-                    }
-                    else if (playerTarget.IsPressingAiHelperButton())
-                    {
-                        playerTarget.AiHelperLiftsPlayerUpOntoLedge(segmentEndPosition);
                     }
                     break;
                 default:
