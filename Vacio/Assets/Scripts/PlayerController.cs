@@ -93,6 +93,9 @@ public class PlayerController : MonoBehaviour
     public float flyingMaxFallSpeed = 10.0f;
     public float flyingAirFriction = 1.0f;
 
+    [Header("AI Helper")]
+    public float climbUpToHelperSpeed = 1.0f;
+
     [Header("GameObject Connections")]
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
     public Transform powerUpBar;
@@ -128,6 +131,8 @@ public class PlayerController : MonoBehaviour
         Airborne,
         Dead,
         Interacting,
+        HelperIsPullingPlayerUpToLedge,
+        HelperIsLiftingPlayerUpToLedge,
     }
 
     [HideInInspector]
@@ -143,6 +148,7 @@ public class PlayerController : MonoBehaviour
 
     [HideInInspector]
     public Vector2 currentVelocity = Vector2.zero;
+    private Vector3 climbToLedgeTarget = Vector3.zero;
 
     private Vector2 lastRespawnPoint = Vector2.zero;
     
@@ -507,6 +513,18 @@ public class PlayerController : MonoBehaviour
                 transform.position = transform.position + offset;
                 canJump = false; // TODO Ghost jump.
                 break;
+            case ECurrentMovementState.HelperIsPullingPlayerUpToLedge:
+            case ECurrentMovementState.HelperIsLiftingPlayerUpToLedge:
+                currentVelocity = Vector2.zero;
+                // Ignore Z-depth, it can mess up this calculation
+                currentPosition.x = Mathf.MoveTowards(transform.position.x, climbToLedgeTarget.x, climbUpToHelperSpeed * Time.deltaTime);
+                currentPosition.y = Mathf.MoveTowards(transform.position.y, climbToLedgeTarget.y, climbUpToHelperSpeed * Time.deltaTime);
+                transform.position = currentPosition;
+                if (transform.position.x == climbToLedgeTarget.x && transform.position.y == climbToLedgeTarget.y)
+                {
+                    SetCurrentState(ECurrentMovementState.Grounded);
+                }
+                break;
             default:
                 break;
         }
@@ -740,4 +758,22 @@ public class PlayerController : MonoBehaviour
         spriteAnimator.CrossFade(animationToPlay, 0f);
         hasPlayedAnimationThisFrame = true;
     }
+
+    public bool IsPressingAiHelperButton()
+    {
+        return SInput.GetCurrentInput().interactDown;
+    }
+
+    public void AiHelperPullsPlayerUpOntoLedge(Vector3 segmentEndPosition)
+    {
+        SetCurrentState(ECurrentMovementState.HelperIsPullingPlayerUpToLedge);
+        climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
+    }
+
+    public void AiHelperLiftsPlayerUpOntoLedge(Vector3 segmentEndPosition)
+    {
+        SetCurrentState(ECurrentMovementState.HelperIsLiftingPlayerUpToLedge);
+        climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
+    }
+
 }

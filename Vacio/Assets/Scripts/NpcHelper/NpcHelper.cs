@@ -7,17 +7,19 @@ public class NpcHelper : MonoBehaviour
 {
     public float moveSpeed = 5.0f;
     public float hopSpeed = 1.0f;
+    public float climbSpeed = 0.33f;
     public AnimationCurve hopHeight;
     public float lookAheadForNextSegment = 0.5f;
+    public float targetDistanceToDetachFromInteractionSegment = 2.0f;
     public bool debug = true;
 
     private AiMovementNodeManager.SNodeConnection currentSegment;
     private int currentConnectionUsageFlag = 0; // Ticks up to indicate whether we have interacted with the current connection or not.
     private PlayerController playerTarget = null;
 
-    private float jumpTimeToReachEnd = 0.0f;
-    private Vector3 jumpStartPosition = Vector3.zero;
-    private Vector3 jumpEndPosition = Vector3.zero;
+    private float segmentTimeToReachEnd = 0.0f;
+    private Vector3 segmentStartPosition = Vector3.zero;
+    private Vector3 segmentEndPosition = Vector3.zero;
 
     #region State Machine
 
@@ -27,6 +29,9 @@ public class NpcHelper : MonoBehaviour
         JustAttachedToNewSegment,
         Walking,
         JumpingToEndOfSegment,
+        ClimbingToTopOfSegment,
+        WaitingToPullPlayerUp,
+        WaitingToLiftPlayerUp,
         //ReadyToInteractWithPlayer,
         //BoostingPlayerLeftToRight,
         ////PullingPlayerLeftToRight,
@@ -83,9 +88,11 @@ public class NpcHelper : MonoBehaviour
         timeInCurrentState += Time.deltaTime;
         Vector3 targetPosition = playerTarget.transform.position;
         AiMovementNodeManager aiManager;
-        AiMovementNodeManager.SNodeConnection nextSegment;
         if (AiMovementNodeManager.TryGetInstance(out aiManager))
         {
+            AiMovementNodeManager.SNodeConnection nextSegment;
+            float normalizedCurrentTime, targetToBottom, targetToTop;
+            Vector3 positionToMoveTo, bottomNode, topNode;
             switch (state)
             {
                 case EHelperState.Start:
@@ -93,6 +100,8 @@ public class NpcHelper : MonoBehaviour
                     transform.position = currentSegment.GetClosestPointOnLine(transform.position, 0.0f);
                     goto case EHelperState.JustAttachedToNewSegment;
                 case EHelperState.JustAttachedToNewSegment:
+                    segmentStartPosition = currentSegment.GetCloserNodePosition(transform.position);
+                    segmentEndPosition = currentSegment.GetFartherNodePosition(transform.position);
                     switch (currentSegment.connectionType)
                     {
                         case AiMovementNodeManager.EConnectionType.Walking:
@@ -101,9 +110,23 @@ public class NpcHelper : MonoBehaviour
                             break;
                         case AiMovementNodeManager.EConnectionType.ShortHop:
                             CurrentHelperState = EHelperState.JumpingToEndOfSegment;
-                            jumpStartPosition = currentSegment.GetCloserNodePosition(transform.position);
-                            jumpEndPosition = currentSegment.GetFartherNodePosition(transform.position);
-                            jumpTimeToReachEnd = (jumpStartPosition - jumpEndPosition).magnitude * hopSpeed;
+                            segmentTimeToReachEnd = (segmentStartPosition - segmentEndPosition).magnitude * hopSpeed;
+                            break;
+                        case AiMovementNodeManager.EConnectionType.LiftSelfFirst:
+                            if (segmentEndPosition.y > segmentStartPosition.y)
+                            {
+                                // Climb from the bottom to the top.
+                                CurrentHelperState = EHelperState.ClimbingToTopOfSegment;
+                                segmentTimeToReachEnd = (segmentStartPosition - segmentEndPosition).magnitude * climbSpeed;
+                            }
+                            else
+                            {
+                                // Just jump down.
+                                goto case AiMovementNodeManager.EConnectionType.ShortHop;
+                            }
+                            break;
+                        case AiMovementNodeManager.EConnectionType.LiftPlayerFirst:
+                            CurrentHelperState = EHelperState.WaitingToLiftPlayerUp;
                             break;
                         default:
                             Debug.LogError("HelperState_Update doesn't know what to do when attaching to segment of type " + currentSegment.connectionType, gameObject);
@@ -112,7 +135,7 @@ public class NpcHelper : MonoBehaviour
                     break;
                 case EHelperState.Walking:
                     float horizontalPositionToMoveTo = Mathf.MoveTowards(transform.position.x, targetPosition.x, moveSpeed * Time.deltaTime);
-                    Vector3 positionToMoveTo = new Vector3(horizontalPositionToMoveTo, transform.position.y, transform.position.z);
+                    positionToMoveTo = new Vector3(horizontalPositionToMoveTo, transform.position.y, transform.position.z);
                     nextSegment = aiManager.GetNearestConnection(positionToMoveTo);
                     if (nextSegment == currentSegment || nextSegment == null) // We're still on the same segment, so just walk.
                     {
@@ -127,21 +150,86 @@ public class NpcHelper : MonoBehaviour
                     }
                     break;
                 case EHelperState.JumpingToEndOfSegment:
-                    float normalizedCurrentTime = timeInCurrentState / jumpTimeToReachEnd;
-                    Vector3 position = Vector3.Lerp(jumpStartPosition, jumpEndPosition, normalizedCurrentTime);
+                    normalizedCurrentTime = timeInCurrentState / segmentTimeToReachEnd;
+                    positionToMoveTo = Vector3.Lerp(segmentStartPosition, segmentEndPosition, normalizedCurrentTime);
                     // Give it a bit of an arc. Could be an AnimationCurve instead.
-                    position += Vector3.up * hopHeight.Evaluate(normalizedCurrentTime);
-                    transform.position = position;
+                    positionToMoveTo += Vector3.up * hopHeight.Evaluate(normalizedCurrentTime);
+                    transform.position = positionToMoveTo;
                     if (normalizedCurrentTime > 1f && aiManager.GetNearestConnection(targetPosition) != currentSegment)
                     {
-                        float forwardSign = Mathf.Sign(jumpEndPosition.x - jumpStartPosition.x);
-                        Vector3 positionToLookForNewSegment = position + forwardSign * lookAheadForNextSegment * Vector3.right;
+                        float forwardSign = Mathf.Sign(segmentEndPosition.x - segmentStartPosition.x);
+                        Vector3 positionToLookForNewSegment = positionToMoveTo + forwardSign * lookAheadForNextSegment * Vector3.right;
                         nextSegment = aiManager.GetNearestConnection(positionToLookForNewSegment);
                         if (nextSegment != currentSegment && nextSegment != null)
                         {
                             currentSegment = nextSegment;
                             CurrentHelperState = EHelperState.JustAttachedToNewSegment;
                         }
+                    }
+                    break;
+                case EHelperState.ClimbingToTopOfSegment:
+                    normalizedCurrentTime = timeInCurrentState / segmentTimeToReachEnd;
+                    positionToMoveTo = Vector3.Lerp(segmentStartPosition, segmentEndPosition, normalizedCurrentTime);
+                    transform.position = positionToMoveTo;
+                    if (normalizedCurrentTime > 1f)
+                    {
+                        switch (currentSegment.connectionType)
+                        {
+                            case AiMovementNodeManager.EConnectionType.LiftSelfFirst:
+                                CurrentHelperState = EHelperState.WaitingToPullPlayerUp;
+                                break;
+                            case AiMovementNodeManager.EConnectionType.LiftPlayerFirst:
+                            // TODO we're done climbing and standing next to the player
+                            default:
+                                Debug.LogError("Finished climbing but no idea what to do now.", gameObject);
+                                break;
+                        }
+                    }
+                    break;
+                case EHelperState.WaitingToPullPlayerUp:
+                    bottomNode = currentSegment.GetFartherNodePosition(transform.position);
+                    topNode = currentSegment.GetCloserNodePosition(transform.position);
+                    targetToBottom = (targetPosition - bottomNode).magnitude;
+                    targetToTop = (targetPosition - topNode).magnitude;
+                    if (targetToBottom < targetToTop && Mathf.Abs(bottomNode.x - targetPosition.x) > targetDistanceToDetachFromInteractionSegment)
+                    {
+                        // If the player walks away from the bottom, jump back down
+                        CurrentHelperState = EHelperState.JumpingToEndOfSegment;
+                        segmentStartPosition = topNode;
+                        segmentEndPosition = bottomNode;
+                        segmentTimeToReachEnd = (segmentStartPosition - segmentEndPosition).magnitude * hopSpeed;
+                    }
+                    else if (targetToBottom > targetToTop && Mathf.Abs(topNode.x - targetPosition.x) > targetDistanceToDetachFromInteractionSegment)
+                    {
+                        // If the player somehow gets up to the top without interacting and is walking away, walk to them
+                        CurrentHelperState = EHelperState.Walking;
+                    }
+                    if (playerTarget.IsPressingAiHelperButton())
+                    {
+                        playerTarget.AiHelperPullsPlayerUpOntoLedge(segmentEndPosition);
+                    }
+                    break;
+                case EHelperState.WaitingToLiftPlayerUp:
+                    bottomNode = currentSegment.GetFartherNodePosition(transform.position);
+                    topNode = currentSegment.GetCloserNodePosition(transform.position);
+                    targetToBottom = (targetPosition - bottomNode).magnitude;
+                    targetToTop = (targetPosition - topNode).magnitude;
+                    if (targetToBottom < targetToTop && Mathf.Abs(bottomNode.x - targetPosition.x) > targetDistanceToDetachFromInteractionSegment)
+                    {
+                        // If the player walks away from the bottom, follow them.
+                        CurrentHelperState = EHelperState.Walking;
+                    }
+                    else if (targetToBottom > targetToTop && Mathf.Abs(topNode.x - targetPosition.x) > targetDistanceToDetachFromInteractionSegment)
+                    {
+                        // If the player somehow gets up to the top without interacting and is walking away, climb up to them.
+                        CurrentHelperState = EHelperState.ClimbingToTopOfSegment;
+                        segmentStartPosition = bottomNode;
+                        segmentEndPosition = topNode;
+                        segmentTimeToReachEnd = (segmentStartPosition - segmentEndPosition).magnitude * climbSpeed;
+                    }
+                    else if (playerTarget.IsPressingAiHelperButton())
+                    {
+                        playerTarget.AiHelperLiftsPlayerUpOntoLedge(segmentEndPosition);
                     }
                     break;
                 default:
