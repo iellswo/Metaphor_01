@@ -104,6 +104,9 @@ public class PlayerController : MonoBehaviour
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
     public Transform powerUpBar;
     public SpriteRenderer powerUpBarGraphic;
+    public GameObject powerUpGlowGraphic;
+    public float powerUpGlowGraphicMinPosition = 0;
+    public float powerUpGlowGraphicMaxPosition = 1;
     [Tooltip("The particle system on the player that makes SFX for air walking.")]
     public ParticleSystem airWalkEmitter;
 
@@ -772,6 +775,11 @@ public class PlayerController : MonoBehaviour
         float destFill = Mathf.MoveTowards(curFill, fillAmount, maxPowerUpBarChangeRate * Time.deltaTime);
 
         rend.material.SetFloat("_Fill", destFill);
+
+        Vector3 glowPosition = powerUpGlowGraphic.transform.localPosition;
+        glowPosition.y = Mathf.Lerp(powerUpGlowGraphicMinPosition, powerUpGlowGraphicMaxPosition, fillAmount);
+        powerUpGlowGraphic.transform.localPosition = glowPosition;
+        Debug.Log(glowPosition.y);
     }
 
     /// <summary>
