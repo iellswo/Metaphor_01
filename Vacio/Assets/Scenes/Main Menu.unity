@@ -13,7 +13,7 @@ OcclusionCullingSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 7
+  serializedVersion: 8
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
@@ -25,6 +25,7 @@ RenderSettings:
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 3
+  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
@@ -41,7 +42,7 @@ RenderSettings:
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 7
+  serializedVersion: 11
   m_GIWorkflowMode: 1
   m_GISettings:
     serializedVersion: 2
@@ -53,7 +54,7 @@ LightmapSettings:
     m_EnableBakedLightmaps: 0
     m_EnableRealtimeLightmaps: 0
   m_LightmapEditorSettings:
-    serializedVersion: 4
+    serializedVersion: 9
     m_Resolution: 2
     m_BakeResolution: 40
     m_TextureWidth: 1024
@@ -66,13 +67,27 @@ LightmapSettings:
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
     m_TextureCompression: 1
-    m_DirectLightInLightProbes: 1
     m_FinalGather: 0
     m_FinalGatherFiltering: 1
     m_FinalGatherRayCount: 256
     m_ReflectionCompression: 2
+    m_MixedBakeMode: 1
+    m_BakeBackend: 0
+    m_PVRSampling: 1
+    m_PVRDirectSampleCount: 32
+    m_PVRSampleCount: 500
+    m_PVRBounces: 2
+    m_PVRFiltering: 0
+    m_PVRFilteringMode: 1
+    m_PVRCulling: 1
+    m_PVRFilteringGaussRadiusDirect: 1
+    m_PVRFilteringGaussRadiusIndirect: 5
+    m_PVRFilteringGaussRadiusAO: 2
+    m_PVRFilteringAtrousColorSigma: 1
+    m_PVRFilteringAtrousNormalSigma: 1
+    m_PVRFilteringAtrousPositionSigma: 1
   m_LightingDataAsset: {fileID: 0}
-  m_RuntimeCPUUsage: 25
+  m_UseShadowmask: 0
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -89,6 +104,8 @@ NavMeshSettings:
     minRegionArea: 2
     manualCellSize: 0
     cellSize: 0.16666667
+    manualTileSize: 0
+    tileSize: 256
     accuratePlacement: 0
   m_NavMeshData: {fileID: 0}
 --- !u!1 &144514668
@@ -337,7 +354,7 @@ Canvas:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 413686896}
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_RenderMode: 0
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
@@ -346,6 +363,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
@@ -635,7 +653,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7a6a51f53b10b84093bb85f1a756822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  StartingSceneIndex: 1
+  StartingSceneName: Level1
 --- !u!4 &1398617411
 Transform:
   m_ObjectHideFlags: 0
@@ -762,16 +780,6 @@ Prefab:
       propertyPath: m_RootOrder
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 199541887363637794, guid: 4691e046619242f4f83242a2acd3a799,
-        type: 2}
-      propertyPath: m_SortingOrder
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 199541887363637794, guid: 4691e046619242f4f83242a2acd3a799,
-        type: 2}
-      propertyPath: m_SortingLayerID
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4691e046619242f4f83242a2acd3a799, type: 2}
   m_IsPrefabParent: 0
@@ -845,6 +853,8 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
+  m_AllowMSAA: 1
+  m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
@@ -871,11 +881,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4233730128019402, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -8.706
+      value: -7.79
       objectReference: {fileID: 0}
     - target: {fileID: 4233730128019402, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -1.318
+      value: -1.26
       objectReference: {fileID: 0}
     - target: {fileID: 4233730128019402, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
       propertyPath: m_LocalPosition.z
@@ -900,75 +910,6 @@ Prefab:
     - target: {fileID: 4233730128019402, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
       propertyPath: m_RootOrder
       value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: airWalkPowerUpBarColor.r
-      value: 0.7411765
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: airWalkPowerUpBarColor.g
-      value: 0.20392159
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: airWalkPowerUpBarColor.b
-      value: 0.19215688
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: lowGravityPowerUpBarColor.r
-      value: 0.9490197
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: lowGravityPowerUpBarColor.g
-      value: 0.2627451
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: lowGravityPowerUpBarColor.b
-      value: 0.4784314
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: flyingPowerUpBarColor.r
-      value: 0.96470594
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: flyingPowerUpBarColor.g
-      value: 0.9803922
-      objectReference: {fileID: 0}
-    - target: {fileID: 114139744489888188, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: flyingPowerUpBarColor.b
-      value: 0.6117647
-      objectReference: {fileID: 0}
-    - target: {fileID: 212549049793694672, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: m_Color.r
-      value: 0.96470594
-      objectReference: {fileID: 0}
-    - target: {fileID: 212549049793694672, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: m_Color.g
-      value: 0.9803922
-      objectReference: {fileID: 0}
-    - target: {fileID: 212549049793694672, guid: bb5ebd6050374fb45aa6f8188e79873e,
-        type: 2}
-      propertyPath: m_Color.b
-      value: 0.6117647
-      objectReference: {fileID: 0}
-    - target: {fileID: 1142900838138948, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: bb5ebd6050374fb45aa6f8188e79873e, type: 2}
