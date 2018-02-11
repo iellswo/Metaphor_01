@@ -91,6 +91,16 @@ public class CameraController : MonoBehaviour
             if (Player.currentVelocity.x > PlayerLeaderXMinSpeed)
             {
                 playerPosition.x += PlayerLeaderX;
+                _lastTargetX = playerPosition.x;
+            }
+            else if (Player.currentVelocity.x < -1 * PlayerLeaderXMinSpeed)
+            {
+                playerPosition.x -= PlayerLeaderX;
+                _lastTargetX = playerPosition.x;
+            }
+            else
+            {
+                playerPosition.x = _lastTargetX;
             }
 
             cameraPosition.x = Lerp(cameraPosition.x, playerPosition.x, LerpSpeedX);

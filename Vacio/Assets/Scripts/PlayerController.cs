@@ -15,6 +15,9 @@ public class PlayerController : MonoBehaviour
     public string animationStateFalling = "anim_fall";
     public string animationStateFloating = "anim_float_idle";
     public string animationStateFloatyWalk = "anim_float_walk";
+    public string animationStateFloatyJump = "anim_float_jump";
+    public string animationStateFloatyFalling = "anim_float_fall";
+    public string animationStateAirWalkAnimation = "anim_slide_walk";
     public string animationStateFlightIdle = "anim_fly_idle";
     public string animationStateFlightMove = "anim_fly_move";
     public string animationStatePowerupPickup = "anim_grab_pwup";
@@ -625,7 +628,7 @@ public class PlayerController : MonoBehaviour
                 animatorState = animationStateWalking;
                 break;
             case ECurrentMovementState.Airborne:
-                animatorState = animationStateJumping;
+                animatorState = currentLowGravityPowerUpMeter > 0f ? animationStateFloatyJump : animationStateJumping;
                 break;
             case ECurrentMovementState.Dead:
                 Initiate.FadeOut(Color.black, 2f);
@@ -666,7 +669,7 @@ public class PlayerController : MonoBehaviour
         }
         velocityX = Mathf.Abs(velocityX);
         velocityY = Mathf.Abs(velocityY);
-        if (isOnGround || isUsingAirWalk)
+        if (isOnGround)
         {
             if (velocityX <= 0.05f)
             {
@@ -680,6 +683,28 @@ public class PlayerController : MonoBehaviour
             else
             {
                 animToPlay = currentLowGravityPowerUpMeter > 0f ? animationStateFloatyWalk : animationStateWalking;
+
+                var speed = (currentLowGravityPowerUpMeter > 0f ? floatyWalkingAnimationVelocity : walkingAnimationVelocity);
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
+                {
+                    PlayAnimation(animToPlay, speed);
+                }
+            }
+        }
+        else if (isUsingAirWalk)
+        {
+            if (velocityX <= 0.05f)
+            {
+                animToPlay = animationStateStanding;
+
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
+                {
+                    PlayAnimation(animToPlay);
+                }
+            }
+            else
+            {
+                animToPlay = animationStateAirWalkAnimation;
 
                 var speed = (currentLowGravityPowerUpMeter > 0f ? floatyWalkingAnimationVelocity : walkingAnimationVelocity);
                 if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
@@ -714,9 +739,11 @@ public class PlayerController : MonoBehaviour
         {
             // we are falling
             if (!(spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateJumping) ||
-                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling)))
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling) ||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFloatyJump)||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFloatyFalling)))
             {
-                PlayAnimation(animationStateFalling, fallAnimSpeed);
+                PlayAnimation(currentLowGravityPowerUpMeter > 0f ? animationStateFloatyFalling : animationStateFalling, fallAnimSpeed);
             }
         }
     }
