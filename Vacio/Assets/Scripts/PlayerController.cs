@@ -168,6 +168,7 @@ public class PlayerController : MonoBehaviour
     private GameObject currentInteractionProxy = null;
 
     private bool hasPlayedAnimationThisFrame = false;
+    private bool respawnInProgress = false;
     
     //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
@@ -236,7 +237,7 @@ public class PlayerController : MonoBehaviour
             // This bracket is reached if the player is dead or reset is pressed.  Respawn all objects and player.
             else
             {
-                if (timeInCurrentState >= deathFadeLength)
+                if (!respawnInProgress && timeInCurrentState >= deathFadeLength)
                 {
                     currentLowGravityPowerUpMeter = 0f;
                     currentAirWalkPowerUpMeter = 0f;
@@ -247,12 +248,14 @@ public class PlayerController : MonoBehaviour
                     SpawnTracker.TriggerReset();
 
                     Initiate.FadeIn(Color.black, 1f);
+                    respawnInProgress = true;
                 }
-                if (timeInCurrentState >= 2 * deathFadeLength)
+                if (respawnInProgress && timeInCurrentState >= 1.5 * deathFadeLength)
                 {
-                    PlayAnimation(animationStateJumping);
+                    //PlayAnimation(animationStateJumping);
 
-                    SetCurrentState(ECurrentMovementState.Airborne);
+                    SetCurrentState(ECurrentMovementState.Grounded);
+                    respawnInProgress = false;
                 }
             }
 
