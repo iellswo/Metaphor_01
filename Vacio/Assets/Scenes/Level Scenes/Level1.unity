@@ -223,7 +223,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000012452059114, guid: 4691e046619242f4f83242a2acd3a799, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -18.69
+      value: -18.06
       objectReference: {fileID: 0}
     - target: {fileID: 4000012452059114, guid: 4691e046619242f4f83242a2acd3a799, type: 2}
       propertyPath: m_LocalPosition.z
@@ -378,7 +378,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: -1355770534
+  randomSeed: -1507406990
   InitialModule:
     serializedVersion: 3
     enabled: 1

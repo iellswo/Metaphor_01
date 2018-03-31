@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 public class PauseController : MonoBehaviour
@@ -56,6 +57,9 @@ public class PauseController : MonoBehaviour
         Time.timeScale = 0;
         MenuCanvas.gameObject.SetActive(true);
         Controller.enabled = false;
+        EventSystem es = GameObject.Find("EventSystem").GetComponent<EventSystem>();
+        es.SetSelectedGameObject(null);
+        es.SetSelectedGameObject(es.firstSelectedGameObject);
     }
 
     private void UnpauseGame()
