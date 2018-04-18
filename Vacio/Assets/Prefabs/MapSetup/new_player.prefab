@@ -43,7 +43,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1413402800463662
 GameObject:
   m_ObjectHideFlags: 0
@@ -143,7 +143,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1529239735800422}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.706, y: -1.318, z: -1}
+  m_LocalPosition: {x: 30.09, y: -22.72, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4141166689298180}
@@ -216,7 +216,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1529239735800422}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5af052ace4c3e194e809b0a3fbcde2fb, type: 3}
   m_Name: 
@@ -229,7 +229,10 @@ MonoBehaviour:
   animationStateJumping: anim_jump
   animationStateFalling: anim_fall
   animationStateFloating: anim_float_idle
-  animationStateFloatyWalk: anim_float_walk
+  animationStateFloatyWalk: anim_new_float_walk
+  animationStateFloatyJump: anim_float_jump
+  animationStateFloatyFalling: anim_float_fall
+  animationStateAirWalkAnimation: anim_slide_walk
   animationStateFlightIdle: anim_fly_idle
   animationStateFlightMove: anim_fly_move
   animationStatePowerupPickup: anim_grab_pwup
@@ -270,7 +273,7 @@ MonoBehaviour:
   lowGravityGroundForwardAcceleration: 2
   lowGravityGroundReverseAcceleration: 4
   lowGravityGroundRunningFriction: 1.77
-  floatyWalkingAnimationVelocity: 0.25
+  floatyWalkingAnimationVelocity: 1
   flyingPowerUpBarColor: {r: 0.96470594, g: 0.9803922, b: 0.6117647, a: 1}
   flyingMaxDuration: 6
   flyingRisingAcceleration: 5
@@ -280,6 +283,10 @@ MonoBehaviour:
   flyingMaxRiseSpeed: 3
   flyingMaxFallSpeed: 10
   flyingAirFriction: 3
+  climbUpToHelperSpeed: 1
+  pushHelperUpTime: 1
+  DistanceToTrailBehindPlayer: 3
+  TrailBehindPlayerFloatSpeed: 3
   powerUpBar: {fileID: 4170557457781768}
   powerUpBarGraphic: {fileID: 212549049793694672}
   airWalkEmitter: {fileID: 198411479132962934}
@@ -3647,7 +3654,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -13228623
-  m_SortingLayer: 3
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 21300000, guid: a8ab139b98432bb4f8fff3bdd5df598e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3689,7 +3696,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -13228623
-  m_SortingLayer: 3
+  m_SortingLayer: 4
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 69b967f8f29de4945aa703d9c5a4478e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3731,7 +3738,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -13228623
-  m_SortingLayer: 3
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: fc4b89eb17f45ba47b14211448e16794, type: 3}
   m_Color: {r: 0.96470594, g: 0.9803922, b: 0.6117647, a: 1}

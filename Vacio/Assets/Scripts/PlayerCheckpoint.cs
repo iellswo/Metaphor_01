@@ -1,15 +1,14 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class PlayerCheckpoint : MonoBehaviour {
+public class PlayerCheckpoint : MonoBehaviour
+{
+    public float gizmoYoffset = 0;
+    public float gizmoRadius = .5f;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    private void OnDrawGizmos()
+    {
+        Vector3 position = this.transform.position - new Vector3(0, gizmoYoffset);
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(position, gizmoRadius);
+    }
 }

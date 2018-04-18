@@ -9,12 +9,17 @@ public class PlayerController : MonoBehaviour
     public Vector2 characterHalfSize = new Vector2(0.25f, .5f);
     public float maxSeekToGroundDistance = 0.33333f;
     public Animator spriteAnimator;
-    public string animationStateStanding = "anim_idle";
+    public string animationStateIdle = "anim_idle";
     public string animationStateWalking = "anim_walk";
     public string animationStateJumping = "anim_jump";
     public string animationStateFalling = "anim_fall";
+    public string animationStateLaying = "anim_laying";
+    public string animationStateStandUp = "anim_stand";
     public string animationStateFloating = "anim_float_idle";
-    public string animationStateFloatyWalk = "anim_float_walk";
+    public string animationStateFloatyWalk = "anim_new_float_walk";
+    public string animationStateFloatyJump = "anim_float_jump";
+    public string animationStateFloatyFalling = "anim_float_fall";
+    public string animationStateAirWalkAnimation = "anim_slide_walk";
     public string animationStateFlightIdle = "anim_fly_idle";
     public string animationStateFlightMove = "anim_fly_move";
     public string animationStatePowerupPickup = "anim_grab_pwup";
@@ -29,6 +34,7 @@ public class PlayerController : MonoBehaviour
     public float maxPowerUpValue = 15f;
     public float powerupGrabAnimationLength = 1f;
     public float deathFadeLength = 1f;
+    public float standTimeLength = .5f;
 
     [Header("Ground Movement Data")]
     [Tooltip("How quickly the player accelerates from standing to running on the ground (m/s/s).")]
@@ -136,6 +142,7 @@ public class PlayerController : MonoBehaviour
         Grounded,
         Airborne,
         Dead,
+        Standing,
         Interacting,
         HelperIsPullingPlayerUpToLedge,
         HelperIsLiftingPlayerUpToLedge,
@@ -165,6 +172,7 @@ public class PlayerController : MonoBehaviour
     private GameObject currentInteractionProxy = null;
 
     private bool hasPlayedAnimationThisFrame = false;
+    private bool respawnInProgress = false;
     
     //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
@@ -191,7 +199,14 @@ public class PlayerController : MonoBehaviour
         bool isOnGround;
 
         // read input and handle the movement of the character.
-        if (currentMovementState != ECurrentMovementState.Interacting)
+        if (currentMovementState == ECurrentMovementState.Standing)
+        {
+            if (timeInCurrentState >= standTimeLength)
+            {
+                SetCurrentState(ECurrentMovementState.Grounded);
+            }
+        }
+        else if (currentMovementState != ECurrentMovementState.Interacting)
         {
             HandleMovement(currentInput, out canJump, out isOnGround);
 
@@ -233,7 +248,7 @@ public class PlayerController : MonoBehaviour
             // This bracket is reached if the player is dead or reset is pressed.  Respawn all objects and player.
             else
             {
-                if (timeInCurrentState >= deathFadeLength)
+                if (!respawnInProgress && timeInCurrentState >= deathFadeLength)
                 {
                     currentLowGravityPowerUpMeter = 0f;
                     currentAirWalkPowerUpMeter = 0f;
@@ -244,13 +259,19 @@ public class PlayerController : MonoBehaviour
                     SpawnTracker.TriggerReset();
 
                     Initiate.FadeIn(Color.black, 1f);
-                }
-                if (timeInCurrentState >= 2 * deathFadeLength)
-                {
-                    PlayAnimation(animationStateJumping);
+                    respawnInProgress = true;
 
-                    SetCurrentState(ECurrentMovementState.Airborne);
+                    PlayAnimation(animationStateLaying);
                 }
+                if (respawnInProgress && timeInCurrentState >= 1.5 * deathFadeLength)
+                {
+                    //PlayAnimation(animationStateJumping);
+
+                    SetCurrentState(ECurrentMovementState.Standing);
+                    respawnInProgress = false;
+                }
+
+                PlayAnimation(animationStateLaying);
             }
 
             if (canJump && currentInput.jumpDown)
@@ -619,23 +640,29 @@ public class PlayerController : MonoBehaviour
         currentMovementState = state;
         timeInCurrentState = 0.0f;
         string animatorState = animationStateWalking;
+        float animSpeed = 1f;
         switch (state)
         {
+            case ECurrentMovementState.Standing:
+                animatorState = animationStateStandUp;
+                animSpeed = 0.5f;
+                break;
             case ECurrentMovementState.Grounded:
-                animatorState = animationStateWalking;
+                animatorState = animationStateIdle;
                 break;
             case ECurrentMovementState.Airborne:
-                animatorState = animationStateJumping;
+                animatorState = currentLowGravityPowerUpMeter > 0f ? animationStateFloatyJump : animationStateJumping;
                 break;
             case ECurrentMovementState.Dead:
                 Initiate.FadeOut(Color.black, 2f);
+                animatorState = animationStateLaying;
                 break;
             case ECurrentMovementState.Interacting:
                 currentVelocity = Vector2.zero;
                 animatorState = animationStatePowerupPickup;
                 break;
         }
-        PlayAnimation(animatorState);
+        PlayAnimation(animatorState, animSpeed);
     }
 
     /// <summary>
@@ -666,11 +693,11 @@ public class PlayerController : MonoBehaviour
         }
         velocityX = Mathf.Abs(velocityX);
         velocityY = Mathf.Abs(velocityY);
-        if (isOnGround || isUsingAirWalk)
+        if (isOnGround)
         {
             if (velocityX <= 0.05f)
             {
-                animToPlay = currentLowGravityPowerUpMeter > 0f ? animationStateFloating : animationStateStanding;
+                animToPlay = currentLowGravityPowerUpMeter > 0f ? animationStateFloating : animationStateIdle;
 
                 if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
                 {
@@ -680,6 +707,28 @@ public class PlayerController : MonoBehaviour
             else
             {
                 animToPlay = currentLowGravityPowerUpMeter > 0f ? animationStateFloatyWalk : animationStateWalking;
+
+                var speed = (currentLowGravityPowerUpMeter > 0f ? floatyWalkingAnimationVelocity : walkingAnimationVelocity);
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
+                {
+                    PlayAnimation(animToPlay, speed);
+                }
+            }
+        }
+        else if (isUsingAirWalk)
+        {
+            if (velocityX <= 0.05f)
+            {
+                animToPlay = animationStateIdle;
+
+                if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
+                {
+                    PlayAnimation(animToPlay);
+                }
+            }
+            else
+            {
+                animToPlay = animationStateAirWalkAnimation;
 
                 var speed = (currentLowGravityPowerUpMeter > 0f ? floatyWalkingAnimationVelocity : walkingAnimationVelocity);
                 if (!spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animToPlay))
@@ -714,9 +763,11 @@ public class PlayerController : MonoBehaviour
         {
             // we are falling
             if (!(spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateJumping) ||
-                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling)))
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling) ||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFloatyJump)||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFloatyFalling)))
             {
-                PlayAnimation(animationStateFalling, fallAnimSpeed);
+                PlayAnimation(currentLowGravityPowerUpMeter > 0f ? animationStateFloatyFalling : animationStateFalling, fallAnimSpeed);
             }
         }
     }
