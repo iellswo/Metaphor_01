@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     public string animationStateWalking = "anim_walk";
     public string animationStateJumping = "anim_jump";
     public string animationStateFalling = "anim_fall";
+    public string animationStateHardLanding = "hard_fall";
     public string animationStateLaying = "anim_laying";
     public string animationStateStandUp = "anim_stand";
     public string animationStateFloating = "anim_float_idle";
@@ -35,6 +36,7 @@ public class PlayerController : MonoBehaviour
     public float powerupGrabAnimationLength = 1f;
     public float deathFadeLength = 1f;
     public float standTimeLength = .5f;
+    public float hardLandTimeLength = 1.2f;
 
     [Header("Ground Movement Data")]
     [Tooltip("How quickly the player accelerates from standing to running on the ground (m/s/s).")]
@@ -144,6 +146,8 @@ public class PlayerController : MonoBehaviour
         Dead,
         Standing,
         Interacting,
+        LongFall,
+        HardLand,
         HelperIsPullingPlayerUpToLedge,
         HelperIsLiftingPlayerUpToLedge,
         PlayerIsLiftingHelperToLedge,
@@ -198,14 +202,39 @@ public class PlayerController : MonoBehaviour
         bool canJump;
         bool isOnGround;
 
-        // read input and handle the movement of the character.
-        if (currentMovementState == ECurrentMovementState.Standing)
+        // Handle the logic of the long fall cutscene
+        if (currentMovementState == ECurrentMovementState.LongFall)
+        {
+            HandleMovement(currentInput, out canJump, out isOnGround);
+            if (isOnGround)
+            {
+                Debug.Log("We've hit the ground.");
+                SetCurrentState(ECurrentMovementState.HardLand);
+            }
+        }
+        // Allow the hard landing animation to play and then wait for input.
+        else if(currentMovementState == ECurrentMovementState.HardLand)
+        {
+            if (timeInCurrentState < hardLandTimeLength)
+            {
+                return;
+            }
+
+            // If the animation has finished we get up if the player presses either up, jump, or interact.
+            if (currentInput.up || currentInput.jumpDown || currentInput.interactDown)
+            {
+                SetCurrentState(ECurrentMovementState.Standing);
+            }
+        }
+        // If we are in a standing state check to see if we've finished standing up
+        else if (currentMovementState == ECurrentMovementState.Standing)
         {
             if (timeInCurrentState >= standTimeLength)
             {
                 SetCurrentState(ECurrentMovementState.Grounded);
             }
         }
+        // read input and handle the movement of the character.
         else if (currentMovementState != ECurrentMovementState.Interacting)
         {
             HandleMovement(currentInput, out canJump, out isOnGround);
@@ -242,6 +271,11 @@ public class PlayerController : MonoBehaviour
                     else if (col.GetComponent<SceneTransitionManager>())
                     {
                         col.GetComponent<SceneTransitionManager>().TriggerLoadScene();
+                    }
+                    else if (col.GetComponent<LongFallTriggerZone>())
+                    {
+                        SetCurrentState(ECurrentMovementState.LongFall);
+                        currentVelocity.x = 0;
                     }
                 }
             }
@@ -486,6 +520,7 @@ public class PlayerController : MonoBehaviour
                 canJump = true;
                 break;
             case ECurrentMovementState.Airborne:
+            case ECurrentMovementState.LongFall:
                 isOnGround = false;
                 float currentGravity = gravity;
                 float maxRise = float.PositiveInfinity;
@@ -645,7 +680,7 @@ public class PlayerController : MonoBehaviour
         {
             case ECurrentMovementState.Standing:
                 animatorState = animationStateStandUp;
-                animSpeed = 0.5f;
+                animSpeed = 0.3f;
                 break;
             case ECurrentMovementState.Grounded:
                 animatorState = animationStateIdle;
@@ -660,6 +695,12 @@ public class PlayerController : MonoBehaviour
             case ECurrentMovementState.Interacting:
                 currentVelocity = Vector2.zero;
                 animatorState = animationStatePowerupPickup;
+                break;
+            case ECurrentMovementState.LongFall:
+                animatorState = animationStateFalling;
+                break;
+            case ECurrentMovementState.HardLand:
+                animatorState = animationStateHardLanding;
                 break;
         }
         PlayAnimation(animatorState, animSpeed);
