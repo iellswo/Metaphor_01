@@ -277,6 +277,10 @@ public class PlayerController : MonoBehaviour
                         SetCurrentState(ECurrentMovementState.LongFall);
                         currentVelocity.x = 0;
                     }
+                    else if (col.GetComponent<NPCIntroController>())
+                    {
+                        col.GetComponent<NPCIntroController>().ZoneEntered();
+                    }
                 }
             }
             // This bracket is reached if the player is dead or reset is pressed.  Respawn all objects and player.
