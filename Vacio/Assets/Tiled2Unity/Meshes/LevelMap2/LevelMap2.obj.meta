@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: e162ef6e1a30ad14aa982f1c7a3329dc
-timeCreated: 1524014639
+guid: 77f0872acb3bb1b4eb8d23c5fd92f41d
+timeCreated: 1533527326
 licenseType: Free
 ModelImporter:
   serializedVersion: 22
@@ -37,12 +37,6 @@ ModelImporter:
     4300006: mesh_0004
     4300008: mesh_0005
     4300010: mesh_0006
-    11400000: mesh_0001
-    11400002: mesh_0002
-    11400004: mesh_0003
-    11400006: mesh_0004
-    11400008: mesh_0005
-    11400010: mesh_0006
   externalObjects: {}
   materials:
     importMaterials: 0
@@ -84,7 +78,7 @@ ModelImporter:
     generateSecondaryUV: 0
     useFileUnits: 1
     optimizeMeshForGPU: 1
-    keepQuads: 0
+    keepQuads: 1
     weldVertices: 1
     preserveHierarchy: 0
     indexFormat: 0

@@ -1,18 +1,42 @@
 fileFormatVersion: 2
-guid: 6031553b45aec0547a5a435c9e998ff8
-timeCreated: 1527538307
+guid: 7f74a375df3d7a049981c33b156e4cdb
+timeCreated: 1533527326
 licenseType: Free
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
-    100000: LevelMapFall_mesh_0003
-    100002: //RootNode
-    400000: LevelMapFall_mesh_0003
-    400002: //RootNode
-    2300000: LevelMapFall_mesh_0003
-    3300000: LevelMapFall_mesh_0003
-    4300000: LevelMapFall_mesh_0003
-    11400000: LevelMapFall_mesh_0003
+    100000: //RootNode
+    100002: mesh_0001
+    100004: mesh_0002
+    100006: mesh_0003
+    100008: mesh_0004
+    100010: mesh_0005
+    100012: mesh_0006
+    400000: //RootNode
+    400002: mesh_0001
+    400004: mesh_0002
+    400006: mesh_0003
+    400008: mesh_0004
+    400010: mesh_0005
+    400012: mesh_0006
+    2300000: mesh_0001
+    2300002: mesh_0002
+    2300004: mesh_0003
+    2300006: mesh_0004
+    2300008: mesh_0005
+    2300010: mesh_0006
+    3300000: mesh_0001
+    3300002: mesh_0002
+    3300004: mesh_0003
+    3300006: mesh_0004
+    3300008: mesh_0005
+    3300010: mesh_0006
+    4300000: mesh_0001
+    4300002: mesh_0002
+    4300004: mesh_0003
+    4300006: mesh_0004
+    4300008: mesh_0005
+    4300010: mesh_0006
   externalObjects: {}
   materials:
     importMaterials: 0
@@ -54,7 +78,7 @@ ModelImporter:
     generateSecondaryUV: 0
     useFileUnits: 1
     optimizeMeshForGPU: 1
-    keepQuads: 0
+    keepQuads: 1
     weldVertices: 1
     preserveHierarchy: 0
     indexFormat: 0
