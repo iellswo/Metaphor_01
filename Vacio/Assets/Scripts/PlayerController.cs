@@ -180,7 +180,7 @@ public class PlayerController : MonoBehaviour
     
     //private List<CameraZone> currentCameraZones = new List<CameraZone>();
 
-    void Awake()
+    void Start()
     {
         lastRespawnPoint = transform.position;
         //Steamworks.SteamAPI.Init(); // TODO SHould move this to a GameManager.
@@ -579,7 +579,6 @@ public class PlayerController : MonoBehaviour
                     {
                         float targetY = hit.point.y + Mathf.Sign(hit.normal.y) * characterHalfSize.y;
                         offset.y = targetY - transform.position.y;
-                        // TODO Landing on slopes and sliding on those.
                     }
                     if (hit.normal.y > 0.0f)
                     {
