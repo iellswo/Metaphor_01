@@ -27,6 +27,8 @@ public class HelperController : MonoBehaviour
     [Header("Animations")]
     public string AnimationIdle = "companion_idle";
     public string AnimationWalk = "companion_walk";
+    public string AnimationFall = "companion_fall";
+    public string AnimationJump = "companion_jump";
 
     [HideInInspector]
     public PlayerController Player;
@@ -39,6 +41,9 @@ public class HelperController : MonoBehaviour
 
     // Movement
     private Vector3 currentVelocity;
+    private JumpPoint[] jumpPoints;
+
+    private JumpPoint currentMovementTarget;
 
     // Animation
     private bool hasPlayedAnimationThisFrame = false;
@@ -46,7 +51,9 @@ public class HelperController : MonoBehaviour
     public enum HelperState
     {
         Idle,
-        Following
+        Following,
+        MovingToJump,
+        Jumping
     }
 
     public enum MovementState
@@ -58,7 +65,10 @@ public class HelperController : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
+        Object[] oJumpPoints;
         Player = FindObjectOfType<PlayerController>();
+        oJumpPoints = FindObjectsOfType<JumpPoint>();
+        jumpPoints = System.Array.ConvertAll(oJumpPoints, item => item as JumpPoint);
         CurrentState = HelperState.Idle;
         CurMovementState = MovementState.Falling;
         currentVelocity = Vector3.zero;
@@ -102,23 +112,48 @@ public class HelperController : MonoBehaviour
         // To save on the number of calls we make to player, grab and cache the player and helper positions
         Vector3 _playerPos = Player.transform.position;
         Vector3 _helperPos = transform.position;
+        JumpPoint target;
 
         // If the player is to the left of us, then stand idly.
         // TODO: If the player is below a ledge we should move to help them up.
-        if (_playerPos.x < _helperPos.x)
+        if (CurrentState != HelperState.Idle && _playerPos.x < _helperPos.x)
         {
             CurrentState = HelperState.Idle;
         }
+        // If there is a Jump Point between us and the player, move to the jump point
+        else if (GetJumpPointBetweenSelfAndPlayer(_playerPos, _helperPos, out target))
+        {
+            currentMovementTarget = target;
+            CurrentState = HelperState.MovingToJump;
+            // TOOD: Make this do things
+        }
+        // Begin following the player.
         else if (_playerPos.x - _helperPos.x > FollowDistance)
         {
-            // Begin following the player.
             CurrentState = HelperState.Following;
         }
-        else if (_playerPos.x - _helperPos.x < FollowDistance)
+        // we have caught up to the player, so stop.
+        else if (CurrentState == HelperState.Following &&  _playerPos.x - _helperPos.x < FollowDistance)
         {
-            // we have caught up to the player, so stop.
             CurrentState = HelperState.Idle;
         }
+    }
+
+    private bool GetJumpPointBetweenSelfAndPlayer(Vector3 self, Vector3 player, out JumpPoint targetJumpPoint)
+    {
+        targetJumpPoint = null;
+
+        foreach (JumpPoint jp in jumpPoints)
+        {
+            float x = jp.transform.position.x;
+            if (self.x < x && x < player.x)
+            {
+                targetJumpPoint = jp;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void HandleMovement()
@@ -207,6 +242,10 @@ public class HelperController : MonoBehaviour
 
     private void ControlAnimator()
     {
+        if (CurMovementState == MovementState.Falling && !spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(AnimationJump))
+        {
+            PlayAnimation(AnimationFall);
+        }
         if (CurMovementState == MovementState.Grounded && currentVelocity.x > .15f)
         {
             PlayAnimation(AnimationWalk, .75f);
@@ -225,6 +264,7 @@ public class HelperController : MonoBehaviour
     private void PlayAnimation(string animationToPlay, float animationSpped = 1f)
     {
         if (hasPlayedAnimationThisFrame) return;
+        if (spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationToPlay)) return;
 
         spriteAnimator.speed = animationSpped;
         spriteAnimator.CrossFade(animationToPlay, 0f);

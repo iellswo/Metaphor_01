@@ -806,9 +806,9 @@ public class PlayerController : MonoBehaviour
         else
         {
             // we are falling
-            if (!(spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateJumping) ||
-                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling) ||
-                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFloatyJump)||
+            if (!(spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateJumping)     ||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFalling)    ||
+                   spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFloatyJump) ||
                    spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(animationStateFloatyFalling)))
             {
                 PlayAnimation(currentLowGravityPowerUpMeter > 0f ? animationStateFloatyFalling : animationStateFalling, fallAnimSpeed);
