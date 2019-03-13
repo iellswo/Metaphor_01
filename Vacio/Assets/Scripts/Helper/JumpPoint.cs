@@ -2,8 +2,10 @@
 
 public class JumpPoint : MonoBehaviour
 {
-    public float gizmoYoffset = 0;
-    public float gizmoRadius = .2f;
+    public float jumpForwardVelocity = 3.5f;
+    
+    private float gizmoYoffset = 0;
+    private float gizmoRadius = .4f;
 
     private void OnDrawGizmos()
     {

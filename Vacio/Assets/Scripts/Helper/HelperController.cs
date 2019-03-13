@@ -21,6 +21,7 @@ public class HelperController : MonoBehaviour
     public float FollowDistance = 2.0f;
     public float MaxWalkingSpeed = 5.1f;
     public float WalkingAcceleration = 1.0f;
+    public float JumpVerticalVelocity = 12f;
     [Tooltip("How quickly the player slows to a stop when they let go of the input (m/s/s)")]
     public float groundRunningFriction = 0.2f;
 
@@ -107,6 +108,7 @@ public class HelperController : MonoBehaviour
         }
     }
     
+    // This method is to determine if we should change states, handles the decision tree.
     private void CheckState()
     {
         // To save on the number of calls we make to player, grab and cache the player and helper positions
@@ -121,14 +123,31 @@ public class HelperController : MonoBehaviour
             CurrentState = HelperState.Idle;
         }
         // If there is a Jump Point between us and the player, move to the jump point
-        else if (GetJumpPointBetweenSelfAndPlayer(_playerPos, _helperPos, out target))
+        else if (CurrentState == HelperState.Following && GetJumpPointBetweenSelfAndPlayer(_helperPos, _playerPos, out target))
         {
             currentMovementTarget = target;
             CurrentState = HelperState.MovingToJump;
-            // TOOD: Make this do things
         }
-        // Begin following the player.
-        else if (_playerPos.x - _helperPos.x > FollowDistance)
+        // If we are moving to a Jump Point and will reach it before the next frame, jump.
+        else if (CurrentState == HelperState.MovingToJump && _helperPos.x + (currentVelocity.x * Time.deltaTime) >= currentMovementTarget.transform.position.x)
+        {
+            // apply upward velocity to actually effect the jump.
+            currentVelocity.y = JumpVerticalVelocity;
+            // Set the current state for logic purposes.
+            CurrentState = HelperState.Jumping;
+            // Set current movement state to "Falling" so that gravity starts working.
+            CurMovementState = MovementState.Falling;
+            // Play the animation for a jump
+            PlayAnimation(AnimationJump);
+        }
+        // Check for the end of a jump, if we have landed.
+        else if (CurrentState == HelperState.Jumping && CurMovementState == MovementState.Grounded)
+        {
+            // Idle is the default state for the controller, so spend one frame here to decide next action.
+            CurrentState = HelperState.Idle;
+        }
+        // Begin following the player if we are idle and they are far enough away.
+        else if (CurrentState == HelperState.Idle && _playerPos.x - _helperPos.x > FollowDistance)
         {
             CurrentState = HelperState.Following;
         }
@@ -167,12 +186,21 @@ public class HelperController : MonoBehaviour
         bool isOnGround = false;
 
         // Handle Horizontal Movement
+
+        // If we have caught up to the player start stopping.
         if (CurrentState == HelperState.Idle && currentVelocity.x > 0f)
         {
             // Slow down to an eventual stop.
             currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0.0f, groundRunningFriction * Time.deltaTime);
         }
-        else if (CurrentState == HelperState.Following)
+        // If we are jumping we should move at the jump velocity defined by the target. 
+        // (This lets us customize each jump to make sure the helper can make it safely.)
+        else if (CurrentState == HelperState.Jumping)
+        {
+            currentVelocity.x = currentMovementTarget.jumpForwardVelocity;
+        }
+        // If we are supposed to be moving to a point, accelerate
+        else if (CurrentState == HelperState.Following || CurrentState == HelperState.MovingToJump)
         {
             // Follow after the player.
             currentVelocity.x += WalkingAcceleration * Time.deltaTime;
@@ -221,9 +249,9 @@ public class HelperController : MonoBehaviour
                 if (isOnGround)
                 {
                     currentPosition.y = hit.point.y + characterHalfSize.y;
+                    currentVelocity.y = 0.0f; // No y velocity because we're grounded.
                 }
 
-                currentVelocity.y = 0.0f; // No y velocity because we're grounded.
                 transform.position = currentPosition + (currentVelocity * Time.deltaTime);
 
                 break;

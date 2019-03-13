@@ -17,7 +17,7 @@ public class CameraController : MonoBehaviour
     public float LerpSpeedY = 0.7f;
 
     // We get the camera to focus ahead of the player when they are moving so that the player can see where they are going and what is ahead of them.
-    // This is accomplished by "tricking" the camera to think that the player is actually ahead of there actual position.  This defines that distance.
+    // This is accomplished by "tricking" the camera to think that the player is actually ahead of their actual position.  This defines that distance.
     [Tooltip("How far ahead of the player we want our focus point.")]
     public float PlayerLeaderX = 0f;
 
