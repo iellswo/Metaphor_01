@@ -51,6 +51,7 @@ public class HelperController : MonoBehaviour
 
     public enum HelperState
     {
+        Respawn,
         Idle,
         Following,
         MovingToJump,
@@ -116,9 +117,30 @@ public class HelperController : MonoBehaviour
         Vector3 _helperPos = transform.position;
         JumpPoint target;
 
+        // If the player is dead, we should stop our current state and movement.
+        if (Player.currentMovementState == PlayerController.ECurrentMovementState.Dead)
+        {
+            CurrentState = HelperState.Respawn;
+            currentVelocity = Vector3.zero;
+        }
+        // If the player has been moved to respawn point, then move us to respawn point.
+        else if (CurrentState == HelperState.Respawn && Player.currentMovementState == PlayerController.ECurrentMovementState.Laying)
+        {
+            // The screen has fully blacked out and we are safe to move the npc for the respawn.
+            Vector3 newPosition = Player.lastRespawnPoint;
+            newPosition.x -= 6.5f;
+            transform.position = newPosition;
+            CurrentState = HelperState.Idle;
+        }
+        // Once the respawn cycle has ended, return to idle state.
+        //else if (CurrentState == HelperState.Respawn && Player.currentMovementState == PlayerController.ECurrentMovementState.Standing)
+        //{
+        //    CurrentState = HelperState.Idle;
+        //}
+
         // If the player is to the left of us, then stand idly.
-        // TODO: If the player is below a ledge we should move to help them up.
-        if (CurrentState != HelperState.Idle && _playerPos.x < _helperPos.x)
+        // TODO: If the player is below a ledge we should move to lift them up.
+        else if (CurrentState != HelperState.Idle && _playerPos.x < _helperPos.x)
         {
             CurrentState = HelperState.Idle;
         }
@@ -278,7 +300,7 @@ public class HelperController : MonoBehaviour
         {
             PlayAnimation(AnimationWalk, .75f);
         }
-        else if (CurMovementState == MovementState.Grounded && CurrentState == HelperState.Idle)
+        else if (CurMovementState == MovementState.Grounded)
         {
             PlayAnimation(AnimationIdle);
         }

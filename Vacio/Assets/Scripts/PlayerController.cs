@@ -144,6 +144,7 @@ public class PlayerController : MonoBehaviour
         Grounded,
         Airborne,
         Dead,
+        Laying,
         Standing,
         Interacting,
         LongFall,
@@ -168,7 +169,8 @@ public class PlayerController : MonoBehaviour
     public Vector2 currentVelocity = Vector2.zero;
     private Vector3 climbToLedgeTarget = Vector3.zero;
 
-    private Vector2 lastRespawnPoint = Vector2.zero;
+    [HideInInspector]
+    public Vector2 lastRespawnPoint = Vector2.zero;
 
     private float fillMax = .696f;
     private float fillMin = .507f;
@@ -240,7 +242,7 @@ public class PlayerController : MonoBehaviour
             HandleMovement(currentInput, out canJump, out isOnGround);
 
             // State changes.
-            if (currentMovementState != ECurrentMovementState.Dead)
+            if (currentMovementState != ECurrentMovementState.Dead && currentMovementState != ECurrentMovementState.Laying)
             {
                 // TODO Use nonalloc
                 //currentCameraZones.Clear();
@@ -299,9 +301,9 @@ public class PlayerController : MonoBehaviour
                     Initiate.FadeIn(Color.black, 1f);
                     respawnInProgress = true;
 
-                    PlayAnimation(animationStateLaying);
+                    SetCurrentState(ECurrentMovementState.Laying);
                 }
-                if (respawnInProgress && timeInCurrentState >= 1.5 * deathFadeLength)
+                if (respawnInProgress && timeInCurrentState >= 1.25 * deathFadeLength)
                 {
                     //PlayAnimation(animationStateJumping);
 
@@ -704,6 +706,9 @@ public class PlayerController : MonoBehaviour
                 break;
             case ECurrentMovementState.HardLand:
                 animatorState = animationStateHardLanding;
+                break;
+            case ECurrentMovementState.Laying:
+                animatorState = animationStateLaying;
                 break;
         }
         PlayAnimation(animatorState, animSpeed);
