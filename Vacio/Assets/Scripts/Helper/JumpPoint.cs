@@ -14,6 +14,6 @@ public class JumpPoint : MonoBehaviour
         //Gizmos.DrawWireSphere(position, gizmoRadius);
 
         Gizmos.color = Color.cyan;
-        Gizmos.DrawSphere(position, gizmoRadius);
+        Gizmos.DrawWireCube(position, new Vector3(gizmoRadius * 1.5f, gizmoRadius * 1.5f));
     }
 }

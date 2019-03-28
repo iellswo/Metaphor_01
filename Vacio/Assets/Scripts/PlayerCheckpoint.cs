@@ -17,8 +17,7 @@ public class PlayerCheckpoint : MonoBehaviour
         if (spawnNPC)
         {
             position = this.transform.position - new Vector3(-npcSpawnOffset, gizmoYoffset);
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawCube(position, new Vector3(gizmoRadius * 1.5f, gizmoRadius * 1.5f));
+            Gizmos.DrawWireCube(position, new Vector3(gizmoRadius * 1.5f, gizmoRadius * 1.5f));
         }
     }
 }

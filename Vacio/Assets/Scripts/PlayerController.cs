@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     public string animationStateFlightIdle = "anim_fly_idle";
     public string animationStateFlightMove = "anim_fly_move";
     public string animationStatePowerupPickup = "anim_grab_pwup";
+    public string animationStateSquatting = "temp_boost"; // TODO: This will change!
 
     [Tooltip("The position of the hand, used to move the powerup sprite during grab powerup.")]
     public GameObject handBone;
@@ -149,9 +150,7 @@ public class PlayerController : MonoBehaviour
         Interacting,
         LongFall,
         HardLand,
-        HelperIsPullingPlayerUpToLedge,
-        HelperIsLiftingPlayerUpToLedge,
-        PlayerIsLiftingHelperToLedge,
+        Squatting,
     }
 
     [HideInInspector]
@@ -236,6 +235,11 @@ public class PlayerController : MonoBehaviour
                 SetCurrentState(ECurrentMovementState.Grounded);
             }
         }
+        // We are squatting, check if the Helper has reached us.
+        else if (currentMovementState == ECurrentMovementState.Squatting)
+        {
+            // TODO: this should do things, but for now, do nothing.
+        }
         // read input and handle the movement of the character.
         else if (currentMovementState != ECurrentMovementState.Interacting)
         {
@@ -255,6 +259,15 @@ public class PlayerController : MonoBehaviour
                         SetCurrentState(ECurrentMovementState.Dead);
                         canJump = false;
                         break;
+                    }
+                    if (col.GetComponent<BoostDefiner>() && currentInput.interactDown)
+                    {
+                        Vector3 newPosition = col.transform.position + col.GetComponent<BoostDefiner>().squatLocation;
+                        Vector3 playerPos = transform.position;
+                        playerPos.x = newPosition.x;
+                        transform.position = playerPos;
+                        // We should squat now.
+                        SetCurrentState(ECurrentMovementState.Squatting);
                     }
                     //else if (col.GetComponent<CameraZone>())
                     //{
@@ -597,24 +610,24 @@ public class PlayerController : MonoBehaviour
                 transform.position = transform.position + offset;
                 canJump = false; // TODO Ghost jump.
                 break;
-            case ECurrentMovementState.HelperIsPullingPlayerUpToLedge:
-            case ECurrentMovementState.HelperIsLiftingPlayerUpToLedge:
-                currentVelocity = Vector2.zero;
-                // Ignore Z-depth, it can mess up this calculation
-                currentPosition.x = Mathf.MoveTowards(transform.position.x, climbToLedgeTarget.x, climbUpToHelperSpeed * Time.deltaTime);
-                currentPosition.y = Mathf.MoveTowards(transform.position.y, climbToLedgeTarget.y, climbUpToHelperSpeed * Time.deltaTime);
-                transform.position = currentPosition;
-                if (transform.position.x == climbToLedgeTarget.x && transform.position.y == climbToLedgeTarget.y)
-                {
-                    SetCurrentState(ECurrentMovementState.Grounded);
-                }
-                break;
-            case ECurrentMovementState.PlayerIsLiftingHelperToLedge:
-                if (timeInCurrentState > pushHelperUpTime)
-                {
-                    SetCurrentState(ECurrentMovementState.Grounded);
-                }
-                break;
+            //case ECurrentMovementState.HelperIsPullingPlayerUpToLedge:
+            //case ECurrentMovementState.HelperIsLiftingPlayerUpToLedge:
+            //    currentVelocity = Vector2.zero;
+            //    // Ignore Z-depth, it can mess up this calculation
+            //    currentPosition.x = Mathf.MoveTowards(transform.position.x, climbToLedgeTarget.x, climbUpToHelperSpeed * Time.deltaTime);
+            //    currentPosition.y = Mathf.MoveTowards(transform.position.y, climbToLedgeTarget.y, climbUpToHelperSpeed * Time.deltaTime);
+            //    transform.position = currentPosition;
+            //    if (transform.position.x == climbToLedgeTarget.x && transform.position.y == climbToLedgeTarget.y)
+            //    {
+            //        SetCurrentState(ECurrentMovementState.Grounded);
+            //    }
+            //    break;
+            //case ECurrentMovementState.PlayerIsLiftingHelperToLedge:
+            //    if (timeInCurrentState > pushHelperUpTime)
+            //    {
+            //        SetCurrentState(ECurrentMovementState.Grounded);
+            //    }
+            //    break;
             default:
                 break;
         }
@@ -709,6 +722,14 @@ public class PlayerController : MonoBehaviour
                 break;
             case ECurrentMovementState.Laying:
                 animatorState = animationStateLaying;
+                break;
+            case ECurrentMovementState.Squatting:
+                animatorState = animationStateSquatting;
+                currentVelocity = Vector2.zero;
+                foreach (SpriteRenderer s in BodySprites)
+                {
+                    s.flipX = true;
+                }
                 break;
         }
         PlayAnimation(animatorState, animSpeed);
@@ -893,22 +914,22 @@ public class PlayerController : MonoBehaviour
         return SInput.GetCurrentInput().interactDown;
     }
 
-    public void AiHelperPullsPlayerUpOntoLedge(Vector3 segmentEndPosition)
-    {
-        SetCurrentState(ECurrentMovementState.HelperIsPullingPlayerUpToLedge);
-        climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
-    }
+    //public void AiHelperPullsPlayerUpOntoLedge(Vector3 segmentEndPosition)
+    //{
+    //    SetCurrentState(ECurrentMovementState.HelperIsPullingPlayerUpToLedge);
+    //    climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
+    //}
 
-    public void AiHelperLiftsPlayerUpOntoLedge(Vector3 segmentEndPosition)
-    {
-        SetCurrentState(ECurrentMovementState.HelperIsLiftingPlayerUpToLedge);
-        climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
-    }
+    //public void AiHelperLiftsPlayerUpOntoLedge(Vector3 segmentEndPosition)
+    //{
+    //    SetCurrentState(ECurrentMovementState.HelperIsLiftingPlayerUpToLedge);
+    //    climbToLedgeTarget = segmentEndPosition + Vector3.up * characterHalfSize.y;
+    //}
 
-    public void LiftAiHelperOntoLedge(Vector3 position)
-    {
-        SetCurrentState(ECurrentMovementState.PlayerIsLiftingHelperToLedge);
-    }
+    //public void LiftAiHelperOntoLedge(Vector3 position)
+    //{
+    //    SetCurrentState(ECurrentMovementState.PlayerIsLiftingHelperToLedge);
+    //}
 
     public Vector3 GetAITargetPosition()
     {
