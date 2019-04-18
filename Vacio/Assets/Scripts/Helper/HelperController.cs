@@ -44,7 +44,9 @@ public class HelperController : MonoBehaviour
     private Vector3 currentVelocity;
     private JumpPoint[] jumpPoints;
 
-    private JumpPoint currentMovementTarget;
+    private JumpPoint currentJumpPoint;
+
+    private Vector3 currentMovementTarget;
 
     // Animation
     private bool hasPlayedAnimationThisFrame = false;
@@ -55,7 +57,9 @@ public class HelperController : MonoBehaviour
         Idle,
         Following,
         MovingToJump,
-        Jumping
+        Jumping,
+        MovingToBoost,
+        BeingBoosted
     }
 
     public enum MovementState
@@ -81,10 +85,11 @@ public class HelperController : MonoBehaviour
     {
         // Reset HasPlayedAnimationThisFrame flag.
         hasPlayedAnimationThisFrame = false;
-        // Always face towards the player.
-        UpdateFacing(Player.transform.position.x < transform.position.x);
         // Check what state we should be in.
         CheckState();
+        // Always face towards the player (unless in some kind of cutscene action)
+        if (CurrentState != HelperState.BeingBoosted)
+            UpdateFacing(Player.transform.position.x < transform.position.x);
         // Handle the movement.
         HandleMovement();
         // Animation control
@@ -137,6 +142,22 @@ public class HelperController : MonoBehaviour
         //{
         //    CurrentState = HelperState.Idle;
         //}
+        else if (CurrentState == HelperState.BeingBoosted)
+        {
+            transform.position = Player.handBone.transform.position + new Vector3(0, characterHalfSize.y);
+        }
+        else if (CurrentState == HelperState.MovingToBoost && _helperPos.x + (currentVelocity.x * Time.deltaTime) >= currentMovementTarget.x)
+        {
+            CurrentState = HelperState.BeingBoosted;
+            currentVelocity = Vector3.zero;
+            transform.position = currentMovementTarget;
+            Player.TriggerBoostFlag = true;
+        }
+        else if (Player.currentMovementState == PlayerController.ECurrentMovementState.Squatting && CurrentState != HelperState.BeingBoosted)
+        {
+            currentMovementTarget = Player.handBone.transform.position + new Vector3(0, characterHalfSize.y);
+            CurrentState = HelperState.MovingToBoost;
+        }
 
         // If the player is to the left of us, then stand idly.
         // TODO: If the player is below a ledge we should move to lift them up.
@@ -147,11 +168,11 @@ public class HelperController : MonoBehaviour
         // If there is a Jump Point between us and the player, move to the jump point
         else if (CurrentState == HelperState.Following && GetJumpPointBetweenSelfAndPlayer(_helperPos, _playerPos, out target))
         {
-            currentMovementTarget = target;
+            currentJumpPoint = target;
             CurrentState = HelperState.MovingToJump;
         }
         // If we are moving to a Jump Point and will reach it before the next frame, jump.
-        else if (CurrentState == HelperState.MovingToJump && _helperPos.x + (currentVelocity.x * Time.deltaTime) >= currentMovementTarget.transform.position.x)
+        else if (CurrentState == HelperState.MovingToJump && _helperPos.x + (currentVelocity.x * Time.deltaTime) >= currentJumpPoint.transform.position.x)
         {
             // apply upward velocity to actually effect the jump.
             currentVelocity.y = JumpVerticalVelocity;
@@ -219,15 +240,21 @@ public class HelperController : MonoBehaviour
         // (This lets us customize each jump to make sure the helper can make it safely.)
         else if (CurrentState == HelperState.Jumping)
         {
-            currentVelocity.x = currentMovementTarget.jumpForwardVelocity;
+            currentVelocity.x = currentJumpPoint.jumpForwardVelocity;
         }
         // If we are supposed to be moving to a point, accelerate
-        else if (CurrentState == HelperState.Following || CurrentState == HelperState.MovingToJump)
+        else if (CurrentState == HelperState.Following || CurrentState == HelperState.MovingToJump || CurrentState == HelperState.MovingToBoost)
         {
             // Follow after the player.
             currentVelocity.x += WalkingAcceleration * Time.deltaTime;
             if (currentVelocity.x > MaxWalkingSpeed)
                 currentVelocity.x = MaxWalkingSpeed;
+        }
+
+        if (CurrentState == HelperState.BeingBoosted)
+        {
+            // If we are in the process of being boosted then completely ignore gravity.
+            return;
         }
 
         switch (CurMovementState)

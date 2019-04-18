@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public string animationStateFlightMove = "anim_fly_move";
     public string animationStatePowerupPickup = "anim_grab_pwup";
     public string animationStateSquatting = "temp_boost"; // TODO: This will change!
+    public string animationStateBoosting = "temp_boost_lift"; // TODO: This will change!
 
     [Tooltip("The position of the hand, used to move the powerup sprite during grab powerup.")]
     public GameObject handBone;
@@ -151,6 +152,7 @@ public class PlayerController : MonoBehaviour
         LongFall,
         HardLand,
         Squatting,
+        Lifting,
     }
 
     [HideInInspector]
@@ -171,6 +173,9 @@ public class PlayerController : MonoBehaviour
     [HideInInspector]
     public Vector2 lastRespawnPoint = Vector2.zero;
 
+    [HideInInspector]
+    public bool TriggerBoostFlag;
+
     private float fillMax = .696f;
     private float fillMin = .507f;
     private float currentInteractionDuration = 0;
@@ -187,6 +192,7 @@ public class PlayerController : MonoBehaviour
         //Steamworks.SteamAPI.Init(); // TODO SHould move this to a GameManager.
         //Steamworks.SteamController.Init("");
         CurrentAIPosition = transform.position;
+        TriggerBoostFlag = false;
     }
 
     // Update is called once per frame
@@ -235,10 +241,15 @@ public class PlayerController : MonoBehaviour
                 SetCurrentState(ECurrentMovementState.Grounded);
             }
         }
-        // We are squatting, check if the Helper has reached us.
+        else if (currentMovementState == ECurrentMovementState.Lifting)
+        {
+            // TODO: This should eventually transition back to Grounded, for now does nothing.
+        }
+        // If we are squatting and the Helper as reached our position and told us to continue;
         else if (currentMovementState == ECurrentMovementState.Squatting)
         {
-            // TODO: this should do things, but for now, do nothing.
+            if (TriggerBoostFlag)
+                SetCurrentState(ECurrentMovementState.Lifting);
         }
         // read input and handle the movement of the character.
         else if (currentMovementState != ECurrentMovementState.Interacting)
@@ -419,7 +430,7 @@ public class PlayerController : MonoBehaviour
 
         CurrentAIPosition = new Vector3(desiredX, transform.position.y, transform.position.z);
     }
-
+    
     private void HandleMovement(SInput currentInput, out bool canJump, out bool isOnGround)
     {
         if (currentInput.resetDown)
@@ -730,6 +741,15 @@ public class PlayerController : MonoBehaviour
                 {
                     s.flipX = true;
                 }
+                TriggerBoostFlag = false;
+                break;
+            case ECurrentMovementState.Lifting:
+                animatorState = animationStateBoosting; currentVelocity = Vector2.zero;
+                foreach (SpriteRenderer s in BodySprites)
+                {
+                    s.flipX = true;
+                }
+                TriggerBoostFlag = false;
                 break;
         }
         PlayAnimation(animatorState, animSpeed);
