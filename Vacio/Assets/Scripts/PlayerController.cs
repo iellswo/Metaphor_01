@@ -105,10 +105,10 @@ public class PlayerController : MonoBehaviour
     public float flyingAirFriction = 1.0f;
 
     [Header("AI Helper")]
-    public float climbUpToHelperSpeed = 1.0f;
-    public float pushHelperUpTime = 1.0f;
-    public float DistanceToTrailBehindPlayer = 3f;
-    public float TrailBehindPlayerFloatSpeed = 3f;
+    public float playerBoostTime = 0.4f;
+    public float liftFollowThuTime = 0.3f;
+    public float stepBackTime = 3.3f;
+    public float stepBackStartingVelocity = 1.5f;
 
     [Header("GameObject Connections")]
     [Tooltip("The power-up bar that appears when the player has a powerup.")]
@@ -116,9 +116,7 @@ public class PlayerController : MonoBehaviour
     public SpriteRenderer powerUpBarGraphic;
     [Tooltip("The particle system on the player that makes SFX for air walking.")]
     public ParticleSystem airWalkEmitter;
-
-    private Vector3 CurrentAIPosition = new Vector3();
-
+    
     private struct SInput
     {
         public bool down, up, jumpDown, jumpHeld, resetDown, interactDown;
@@ -153,6 +151,9 @@ public class PlayerController : MonoBehaviour
         HardLand,
         Squatting,
         Lifting,
+        LiftFollowThru,
+        StepBack,
+        DoneSteppingBack,
     }
 
     [HideInInspector]
@@ -174,6 +175,9 @@ public class PlayerController : MonoBehaviour
     public Vector2 lastRespawnPoint = Vector2.zero;
 
     [HideInInspector]
+    public Vector3 liftToPoint;
+
+    [HideInInspector]
     public bool TriggerBoostFlag;
 
     private float fillMax = .696f;
@@ -191,7 +195,6 @@ public class PlayerController : MonoBehaviour
         lastRespawnPoint = transform.position;
         //Steamworks.SteamAPI.Init(); // TODO SHould move this to a GameManager.
         //Steamworks.SteamController.Init("");
-        CurrentAIPosition = transform.position;
         TriggerBoostFlag = false;
     }
 
@@ -241,15 +244,43 @@ public class PlayerController : MonoBehaviour
                 SetCurrentState(ECurrentMovementState.Grounded);
             }
         }
+        else if (currentMovementState == ECurrentMovementState.LiftFollowThru)
+        {
+            // TODO: Play animation to stand up
+            if (timeInCurrentState >= liftFollowThuTime)
+            {
+                SetCurrentState(ECurrentMovementState.StepBack);
+            }
+        }
+        else if (currentMovementState == ECurrentMovementState.StepBack)
+        {
+            if (timeInCurrentState >= stepBackTime)
+            {
+                SetCurrentState(ECurrentMovementState.DoneSteppingBack);
+            }
+
+            SInput fakedInput = new SInput
+            {
+                left = -1f,
+                right = -1f
+            };
+            
+            HandleMovement(fakedInput, out canJump, out isOnGround);
+        }
         else if (currentMovementState == ECurrentMovementState.Lifting)
         {
-            // TODO: This should eventually transition back to Grounded, for now does nothing.
+            if (timeInCurrentState >= playerBoostTime)
+            {
+                SetCurrentState(ECurrentMovementState.LiftFollowThru);
+            }
         }
         // If we are squatting and the Helper as reached our position and told us to continue;
         else if (currentMovementState == ECurrentMovementState.Squatting)
         {
             if (TriggerBoostFlag)
                 SetCurrentState(ECurrentMovementState.Lifting);
+            if (currentInput.interactDown)
+                SetCurrentState(ECurrentMovementState.StepBack);
         }
         // read input and handle the movement of the character.
         else if (currentMovementState != ECurrentMovementState.Interacting)
@@ -274,6 +305,7 @@ public class PlayerController : MonoBehaviour
                     if (col.GetComponent<BoostDefiner>() && currentInput.interactDown)
                     {
                         Vector3 newPosition = col.transform.position + col.GetComponent<BoostDefiner>().squatLocation;
+                        liftToPoint = col.transform.position + col.GetComponent<BoostDefiner>().liftLocation;
                         Vector3 playerPos = transform.position;
                         playerPos.x = newPosition.x;
                         transform.position = playerPos;
@@ -415,20 +447,6 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        float desiredX = Mathf.MoveTowards(CurrentAIPosition.x, 
-            transform.position.x - Mathf.Sign(currentVelocity.x) * DistanceToTrailBehindPlayer, 
-            Mathf.Abs(currentVelocity.x) * Time.deltaTime * TrailBehindPlayerFloatSpeed);
-
-        float delta = desiredX - CurrentAIPosition.x;
-
-        if (Mathf.Sign(delta) != Mathf.Sign(currentVelocity.x))
-        {
-            desiredX = CurrentAIPosition.x;
-        }
-
-        desiredX = Mathf.Clamp(desiredX, transform.position.x - DistanceToTrailBehindPlayer, transform.position.x + DistanceToTrailBehindPlayer);
-
-        CurrentAIPosition = new Vector3(desiredX, transform.position.y, transform.position.z);
     }
     
     private void HandleMovement(SInput currentInput, out bool canJump, out bool isOnGround)
@@ -516,6 +534,7 @@ public class PlayerController : MonoBehaviour
         switch (currentMovementState)
         {
             case ECurrentMovementState.Grounded:
+            case ECurrentMovementState.StepBack:
                 isUsingFlightPowerup = false;
 
                 // Check for the player walking into walls.
@@ -744,13 +763,40 @@ public class PlayerController : MonoBehaviour
                 TriggerBoostFlag = false;
                 break;
             case ECurrentMovementState.Lifting:
-                animatorState = animationStateBoosting; currentVelocity = Vector2.zero;
+                animatorState = animationStateBoosting;
+                currentVelocity = Vector2.zero;
                 foreach (SpriteRenderer s in BodySprites)
                 {
                     s.flipX = true;
                 }
                 TriggerBoostFlag = false;
                 break;
+            case ECurrentMovementState.LiftFollowThru:
+                // TODO: standup animation
+                animatorState = animationStateIdle;
+                currentVelocity = Vector2.zero;
+                foreach (SpriteRenderer s in BodySprites)
+                {
+                    s.flipX = true;
+                }
+                break;
+            case ECurrentMovementState.StepBack:
+                animatorState = animationStateWalking;
+                currentVelocity = new Vector2(-1 * stepBackStartingVelocity, 0f);
+                foreach (SpriteRenderer s in BodySprites)
+                {
+                    s.flipX = true;
+                }
+                break;
+            case ECurrentMovementState.DoneSteppingBack:
+                animatorState = animationStateIdle;
+                foreach (SpriteRenderer s in BodySprites)
+                {
+                    s.flipX = false;
+                }
+                currentMovementState = ECurrentMovementState.Grounded;
+                break;
+
         }
         PlayAnimation(animatorState, animSpeed);
     }
@@ -950,9 +996,5 @@ public class PlayerController : MonoBehaviour
     //{
     //    SetCurrentState(ECurrentMovementState.PlayerIsLiftingHelperToLedge);
     //}
-
-    public Vector3 GetAITargetPosition()
-    {
-        return CurrentAIPosition;
-    }
+    
 }

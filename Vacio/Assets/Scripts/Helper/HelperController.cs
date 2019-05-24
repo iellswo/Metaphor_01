@@ -14,6 +14,9 @@ public class HelperController : MonoBehaviour
     [Tooltip("Player's max speed when falling (m/s)")]
     public float maxFallSpeed = 10.0f;
 
+    [Tooltip("Position of the hand, used for climbing animation.")]
+    public GameObject handBone;
+
     [Tooltip("List here all sprite renderers that you want to flip when the character reverses facing.")]
     public List<SpriteRenderer> BodySprites = new List<SpriteRenderer>();
 
@@ -30,6 +33,7 @@ public class HelperController : MonoBehaviour
     public string AnimationWalk = "companion_walk";
     public string AnimationFall = "companion_fall";
     public string AnimationJump = "companion_jump";
+    public string AnimationClmb = "companion_climb";
 
     [HideInInspector]
     public PlayerController Player;
@@ -48,6 +52,10 @@ public class HelperController : MonoBehaviour
 
     private Vector3 currentMovementTarget;
 
+    // Climbing
+    private float climbingTime = 1f;
+    private float timeClimbing = 0f;
+
     // Animation
     private bool hasPlayedAnimationThisFrame = false;
 
@@ -59,7 +67,8 @@ public class HelperController : MonoBehaviour
         MovingToJump,
         Jumping,
         MovingToBoost,
-        BeingBoosted
+        BeingBoosted, 
+        Climbing,
     }
 
     public enum MovementState
@@ -88,7 +97,7 @@ public class HelperController : MonoBehaviour
         // Check what state we should be in.
         CheckState();
         // Always face towards the player (unless in some kind of cutscene action)
-        if (CurrentState != HelperState.BeingBoosted)
+        if (CurrentState != HelperState.BeingBoosted && CurrentState != HelperState.Climbing)
             UpdateFacing(Player.transform.position.x < transform.position.x);
         // Handle the movement.
         HandleMovement();
@@ -142,10 +151,32 @@ public class HelperController : MonoBehaviour
         //{
         //    CurrentState = HelperState.Idle;
         //}
+        // Transition out of climbing state.
+        else if (CurrentState == HelperState.Climbing && timeClimbing >= climbingTime)
+        {
+            // TODO: This should transition to a laying down state.
+            CurrentState = HelperState.Idle;
+        }
+        // Update while in Climging state: Position so that the hand bone lines up with the ledge.
+        else if (CurrentState == HelperState.Climbing)
+        {
+            transform.position = currentMovementTarget - handBone.transform.localPosition;
+            timeClimbing += Time.deltaTime;
+        }
+        // Transition from BeingBoosted to Climbing: Once at the top of the boost, climb up the ledge.
+        else if (CurrentState == HelperState.BeingBoosted && Player.currentMovementState == PlayerController.ECurrentMovementState.LiftFollowThru)
+        {
+            CurrentState = HelperState.Climbing;
+            currentMovementTarget = Player.liftToPoint;
+            timeClimbing = 0f;
+            PlayAnimation(AnimationClmb);
+        }
+        // During BeingBoosted state: Place self at position of the handBone of the Player.
         else if (CurrentState == HelperState.BeingBoosted)
         {
             transform.position = Player.handBone.transform.position + new Vector3(0, characterHalfSize.y);
         }
+        // Reached Player's hand, begin being boosted
         else if (CurrentState == HelperState.MovingToBoost && _helperPos.x + (currentVelocity.x * Time.deltaTime) >= currentMovementTarget.x)
         {
             CurrentState = HelperState.BeingBoosted;
@@ -153,7 +184,10 @@ public class HelperController : MonoBehaviour
             transform.position = currentMovementTarget;
             Player.TriggerBoostFlag = true;
         }
-        else if (Player.currentMovementState == PlayerController.ECurrentMovementState.Squatting && CurrentState != HelperState.BeingBoosted)
+        // Player is squatting, begin MovingToBoost state. (Only if player is to our right)
+        else if (Player.currentMovementState == PlayerController.ECurrentMovementState.Squatting
+                    && CurrentState != HelperState.BeingBoosted
+                    && _playerPos.x > _helperPos.x)
         {
             currentMovementTarget = Player.handBone.transform.position + new Vector3(0, characterHalfSize.y);
             CurrentState = HelperState.MovingToBoost;
@@ -195,7 +229,7 @@ public class HelperController : MonoBehaviour
             CurrentState = HelperState.Following;
         }
         // we have caught up to the player, so stop.
-        else if (CurrentState == HelperState.Following &&  _playerPos.x - _helperPos.x < FollowDistance)
+        else if (CurrentState == HelperState.Following && _playerPos.x - _helperPos.x < FollowDistance)
         {
             CurrentState = HelperState.Idle;
         }
@@ -251,8 +285,9 @@ public class HelperController : MonoBehaviour
                 currentVelocity.x = MaxWalkingSpeed;
         }
 
-        if (CurrentState == HelperState.BeingBoosted)
+        if (CurrentState == HelperState.BeingBoosted || CurrentState == HelperState.Climbing)
         {
+            CurMovementState = MovementState.Falling;
             // If we are in the process of being boosted then completely ignore gravity.
             return;
         }
@@ -319,11 +354,14 @@ public class HelperController : MonoBehaviour
 
     private void ControlAnimator()
     {
-        if (CurMovementState == MovementState.Falling && !spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(AnimationJump))
+        if (CurrentState == HelperState.Climbing)
+        {
+        }
+        else if (CurMovementState == MovementState.Falling && !spriteAnimator.GetCurrentAnimatorStateInfo(layerIndex: 0).IsName(AnimationJump))
         {
             PlayAnimation(AnimationFall);
         }
-        if (CurMovementState == MovementState.Grounded && currentVelocity.x > .15f)
+        else if (CurMovementState == MovementState.Grounded && currentVelocity.x > .15f)
         {
             PlayAnimation(AnimationWalk, .75f);
         }

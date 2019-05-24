@@ -1,5 +1,35 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1346181257
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1346181258}
+  m_Layer: 0
+  m_Name: HandBone
+  m_TagString: Untagged
+  m_Icon: {fileID: 3306451490063965843, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1346181258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1346181257}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 8402762882445347421}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8402762882445347410
 GameObject:
   m_ObjectHideFlags: 0
@@ -31,6 +61,7 @@ Transform:
   m_Children:
   - {fileID: 8402762882799467701}
   - {fileID: 8402762882712407489}
+  - {fileID: 1346181258}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -70,17 +101,20 @@ MonoBehaviour:
   spriteAnimator: {fileID: 8402762882445347420}
   gravity: 30
   maxFallSpeed: 10
+  handBone: {fileID: 1346181257}
   BodySprites:
   - {fileID: 8402762882799467700}
   - {fileID: 8402762882712407488}
   FollowDistance: 2.5
   MaxWalkingSpeed: 3.5
   WalkingAcceleration: 3.3
+  JumpVerticalVelocity: 12
   groundRunningFriction: 30
   AnimationIdle: companion_idle
   AnimationWalk: companion_walk
   AnimationFall: companion_fall
   AnimationJump: companion_jump
+  AnimationClmb: companion_climb
   Player: {fileID: 0}
   CurrentState: 0
   CurMovementState: 0
